@@ -279,7 +279,9 @@
       
       <div class="card">
         <h3 class="font-extrabold mb-2">منطقة العرض</h3>
-        <div id="projectHost" class="rounded-xl border border-slate-200 overflow-auto p-3 bg-white"></div>
+        <div id="projectHost" class="rounded-xl border border-slate-200 overflow-auto p-3 bg-white">
+          <h2 class="text-center text-slate-500 p-4">الرجاء اختيار مشروع من القائمة الجانبية ليتم عرضه في نافذة جديدة.</h2>
+        </div>
       </div>
     </section>
 
@@ -564,22 +566,62 @@
     }
     function escapeHtml(s){ return s.replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
     // تنقية أساسية تمنع XSS: تزيل <script> وسمات on* وروابط javascript:
-function sanitizeHtml(unsafeHtml){
-  const tpl = document.createElement('template');
-  tpl.innerHTML = unsafeHtml ?? '';
-  // إزالة كل السكربتات
-  tpl.content.querySelectorAll('script').forEach(n=>n.remove());
-  // إزالة on* والـ javascript: من href/src
-  const walker = document.createTreeWalker(tpl.content, NodeFilter.SHOW_ELEMENT);
-  while(walker.nextNode()){
-    const el = walker.currentNode;
-    for(const attr of Array.from(el.attributes)){
-      if(/^on/i.test(attr.name)) el.removeAttribute(attr.name);
-      if(/^(href|src)$/i.test(attr.name) && /^javascript:/i.test(attr.value)) el.removeAttribute(attr.name);
+    function sanitizeHtml(unsafeHtml){
+      const tpl = document.createElement('template');
+      tpl.innerHTML = unsafeHtml ?? '';
+      // إزالة كل السكربتات
+      tpl.content.querySelectorAll('script').forEach(n=>n.remove());
+      // إزالة on* والـ javascript: من href/src
+      const walker = document.createTreeWalker(tpl.content, NodeFilter.SHOW_ELEMENT);
+      while(walker.nextNode()){
+        const el = walker.currentNode;
+        for(const attr of Array.from(el.attributes)){
+          if(/^on/i.test(attr.name)) el.removeAttribute(attr.name);
+          if(/^(href|src)$/i.test(attr.name) && /^javascript:/i.test(attr.value)) el.removeAttribute(attr.name);
+        }
+      }
+      return tpl.innerHTML;
     }
-  }
-  return tpl.innerHTML;
-}
+
+    // 🌟 دالة جديدة: تفتح الكود في نافذة جديدة معزولة بالكامل 🌟
+    function openIsolatedContent(htmlContent, title = 'المشروع'){
+        // Expected: Full HTML content, which is wrapped in a minimal page structure
+        const fullHtml = `
+            <!DOCTYPE html>
+            <html lang="ar" dir="rtl">
+            <head>
+                <meta charset="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <title>${title}</title>
+                <style>
+                    /* Reset any default body margins or padding and ensure clean background */
+                    body { margin: 0; padding: 0; background-color: white; }
+                </style>
+            </head>
+            <body>
+                ${htmlContent}
+            </body>
+            </html>
+        `;
+
+        // Create a blob URL to safely open the content in a new window/tab
+        const blob = new Blob([fullHtml], { type: 'text/html' });
+        const blobUrl = URL.createObjectURL(blob);
+        
+        // Open the new window/tab
+        const newWindow = window.open(blobUrl, '_blank');
+        
+        if (newWindow) {
+            // Revoke the URL after the window is loaded to prevent memory leaks
+            newWindow.onload = () => {
+                // Wait a moment before revoking to ensure content load
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 1000); 
+            };
+        } else {
+            showToast('الرجاء السماح للنوافذ المنبثقة لعرض المشروع.');
+        }
+    }
+
 
     /*********************************
      * ٤) جلسة + وضع العرض - الإصلاح هنا
@@ -848,17 +890,18 @@ function sanitizeHtml(unsafeHtml){
     let cachedProjects = [];
 
     function renderProjectsUI(){
-      projectsList.innerHTML = cachedProjects.map((p)=>{
+      projectsList.innerHTML = cachedProjects.map((p, index)=>{ // 🌟 إضافة index للترقيم 🌟
         const isActive = p.id === activeProjectId;
         const activeClass = isActive ? 'active' : '';
         // Requested: Yellow dot, white text, green 'الحالي' pill
         const dotColor = isActive ? 'var(--drawer-active-dot)' : 'var(--drawer-text)';
         const statusPill = isActive ? '<span class="active-pill">الحالي</span>' : ''; 
+        const projectDisplayNumber = index + 1; // الترقيم يبدأ من 1
         return `
-          <a href="#" data-projid="${p.id}" class="${activeClass} flex items-center justify-between text-base font-bold">
+          <a href="#" data-projid="${p.id}" data-project-number="${projectDisplayNumber}" class="${activeClass} flex items-center justify-between text-base font-bold">
             <div class="flex items-center gap-3">
               <span class="inline-block w-2 h-2 rounded-full" style="background-color: ${dotColor};"></span>
-              <span class="text-white">${escapeHtml(p.name||'بدون اسم')}</span>
+              <span class="text-white">${projectDisplayNumber}. ${escapeHtml(p.name||'بدون اسم')}</span> 
             </div>
             ${statusPill}
           </a>
@@ -878,7 +921,7 @@ function sanitizeHtml(unsafeHtml){
         <div class="border border-slate-200 rounded-xl p-3 bg-white">
           <div class="flex flex-wrap items-start justify-between gap-2">
             <div class="min-w-0">
-              <div class="font-extrabold text-slate-900 text-sm">${escapeHtml(p.name||'بدون اسم')}</div>
+              <div class="font-extrabold text-slate-900 text-sm">${i + 1}. ${escapeHtml(p.name||'بدون اسم')}</div>
               <div class="text-[11px] text-slate-500 break-all mono">ID: ${p.id}</div>
             </div>
             <div class="flex flex-wrap gap-2 text-xs">
@@ -933,13 +976,9 @@ function sanitizeHtml(unsafeHtml){
           showTab('projects');
           showToast('تم تحميل المشروع للتعديل.');
       }else if(act==='preview'){
-        // FIX APPLIED: Project code renders directly into projectHost without sanitization
-        projectHost.innerHTML = p.html || ''; // <--- تم التعديل هنا
-        setView(userView);
-        drawer.classList.remove('open');
-        activeProjectId = pid;
-        renderProjectsUI();
-        showToast('تمت المعاينة');
+        // 🌟 استخدام دالة العرض المعزول للمعاينة 🌟
+        openIsolatedContent(p.html, 'معاينة: '+p.name || 'المشروع');
+        showToast('تم فتح المعاينة في نافذة جديدة.');
       }
     });
 
@@ -951,26 +990,28 @@ function sanitizeHtml(unsafeHtml){
       const p = cachedProjects.find(x=>x.id===pid);
       if(!p) return;
       
-      // FIX APPLIED: Project code renders directly into projectHost without sanitization
-      projectHost.innerHTML = p.html || ''; // <--- تم التعديل هنا
+      // 🌟 استخدام دالة العرض المعزول لفتح المشروع في نافذة جديدة 🌟
+      openIsolatedContent(p.html, p.name || 'المشروع');
       
       drawer.classList.remove('open');
       
+      // تحديث حالة المشروع النشط وتنسيق القائمة
       activeProjectId = pid;
       renderProjectsUI();
+      // وضع نص إرشادي في الحاوية الرئيسية
+      projectHost.innerHTML = '<h2 class="text-center text-slate-500 p-4">تم فتح المشروع في نافذة جديدة.</h2>';
     });
 
     function openFirstProjectIfAny(){
       const ses = session.get();
       if(!ses || ses.role!=='user') return;
       
-      // Check if user is in userView and projectHost is empty
+      // Check if user is in userView
       if(userView && !userView.classList.contains('hidden')){
         const first = cachedProjects[0];
         if(first && !activeProjectId){ 
-          projectHost.innerHTML = first.html || ''; 
-          activeProjectId = first.id;
-          renderProjectsUI();
+          // 🌟 وضع نص إرشادي بدلاً من تحميل أي مشروع في الحاوية الرئيسية 🌟
+          projectHost.innerHTML = '<h2 class="text-center text-slate-500 p-4">الرجاء اختيار مشروع من القائمة الجانبية ليتم عرضه في نافذة جديدة.</h2>';
         }
       }
     }
@@ -987,7 +1028,7 @@ function sanitizeHtml(unsafeHtml){
           showToast('تم حفظ تعديلات المشروع');
       }else{
           // Find the current max order value
-          const maxOrder = cachedProjects.length > 0 ? cachedProjects[0].order + 1 : nowTs();
+          const maxOrder = cachedProjects.length > 0 ? (cachedProjects[0].order + 1) : nowTs();
           await addDoc(collection(db,'projects'), { name, html, order: maxOrder });
           showToast('تمت إضافة المشروع');
       }
@@ -1206,46 +1247,16 @@ function sanitizeHtml(unsafeHtml){
         e.preventDefault(); 
         const sRef = doc(db, 'settings', 'main');
         const snap = await getDoc(sRef);
+        // 🌟 استخدام دالة العرض المعزول لصفحة حول المطوّر 🌟
         const html = snap.data()?.aboutDevHtml || '<h2>لم يتم تعيين محتوى لصفحة حول المطوّر بعد.</h2>';
-        
-        // Feature: Project code renders directly into projectHost
-        projectHost.innerHTML = html;
+        openIsolatedContent(html, 'حول المطوّر');
         
         drawer.classList.remove('open');
         
         activeProjectId = 'aboutDev';
         renderProjectsUI(); // This now updates the 'حول المطوّر' button style
-        showToast('تم عرض صفحة حول المطوّر'); 
-        
-        // Ensure user view is active if clicked from drawer
-        if (session.get()?.role === 'user') {
-            setView(userView);
-        }
+        showToast('تم فتح صفحة حول المطوّر في نافذة جديدة.'); 
     });
-    
-    // دالة جديدة: تعرض المشروع باستخدام iframe
-function renderProjectInHost(url){
-  // 1. فحص بسيط للرابط
-  if (!url || !url.startsWith('http')) {
-      projectHost.innerHTML = `<div class="p-4 text-center text-red-600">
-                                <h4 class="font-extrabold mb-2">خطأ في الرابط</h4>
-                                <p class="text-sm">الرابط غير صحيح أو غير متوفر حالياً.</p>
-                               </div>`;
-      return;
-  }
-  
-  // 2. استخدام iframe للعرض الآمن
-  projectHost.innerHTML = `
-    <iframe 
-      src="${url}" 
-      style="width: 100%; height: 100%; min-height: 50vh; border: none; background: white;"
-      allowfullscreen
-      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-    >
-    </iframe>
-  `;
-}
-
 
     /*********************************
      * ١٣) تهيئة - الإصلاح الرئيسي هنا
