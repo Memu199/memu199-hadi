@@ -2,78 +2,209 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>بوابة الدخول والمشاريع – ملف واحد</title>
-  <!-- Tailwind -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" /> 
+  <title>خاص لمكتب شيخ هادي علي</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root{--brand:#0ea5e9;--ink:#0f172a;--muted:#64748b;--surface:#ffffff;--bg:#f1f5f9}
+    /* 1. Base Variables (Fixed to Light Mode) */
+    :root{
+      --brand:#0ea5e9; 
+      --ink:#0f172a; 
+      --muted:#64748b; 
+      --surface:#ffffff; 
+      --bg:#f1f5f9;
+      /* Drawer background Dark: Black/Very Dark Blue as requested in image */
+      --drawer-bg:#0b1220; 
+      --drawer-text:#e5e7eb; 
+      /* Updated Hover/Active for better contrast */
+      --drawer-hover:rgba(255,255,255,.1); 
+      /* Active: Blue background removed, now uses white text on dark background as in image */
+      --drawer-active-dot:#facc15; /* Yellow dot for active item */
+      --card-shadow:0 12px 30px rgba(2,6,23,.08);
+      
+      /* New: Custom Logout Color */
+      --logout-color: #FF0066;
+      /* New: Custom Dev Logout Color (optional different shade) */
+      --logout-dev-color: #ef4444; 
+    }
+    
+    /* 2. Global Styling & Smooth Scroll */
+    html{scroll-behavior: smooth; font-size: 15px;} /* Font size adjusted for better text size */
     html,body{height:100%}
-    body{background:var(--bg);color:var(--ink)}
-    .card{background:var(--surface);border-radius:1.25rem;box-shadow:0 12px 30px rgba(2,6,23,.08);padding:1.25rem}
-    .btn{display:inline-flex;align-items:center;gap:.5rem;border-radius:1rem;padding:.8rem 1.1rem;font-weight:800}
+    body{background:var(--bg);color:var(--ink); transition: background .3s, color .3s}
+    
+    /* 3. Reusable Classes */
+    .card{background:var(--surface);border-radius:1.25rem;box-shadow:var(--card-shadow);padding:1.25rem; transition: background .3s, box-shadow .3s}
+    /* Updated btn style: ENSURE proper color contrast and clear background */
+    .btn{
+        display:inline-flex;
+        align-items:center;
+        gap:.5rem;
+        border-radius:1rem;
+        padding:.6rem 1rem; /* Smaller padding */
+        font-weight:700; /* Slightly lighter bold */
+        white-space: nowrap; 
+        width: fit-content;
+        font-size: 0.95rem; /* Slightly larger text */
+        transition: background .15s, color .15s, border-color .15s;
+    } 
     .btn-primary{background:var(--brand);color:#fff}
-    .btn-plain{background:#eef2f7}
-    .btn-danger{background:#ef4444;color:#fff}
-    .chip{display:inline-flex;align-items:center;gap:.35rem;background:#e2e8f0;color:#0f172a;padding:.25rem .6rem;border-radius:999px;font-weight:700}
-    .drawer{position:fixed;top:0;bottom:0;right:0;width:305px;background:#0b1220;color:#e5e7eb;transform:translateX(110%);transition:.3s ease;padding:18px 16px 90px 16px;z-index:60;}
+    .btn-success{background:#10b981;color:#fff}
+    /* btn-plain: Adjusted to have clear border and text for better visibility */
+    .btn-plain{background:var(--surface);color:var(--ink); border:1px solid var(--muted); padding: .6rem 1rem;}
+    /* btn-danger: Used for confirmation button in modal (fixed to ensure visibility) */
+    .btn-danger{background:#ef4444;color:#fff} 
+    
+    /* Custom Logout Button (Red from image) */
+    .btn-logout-custom{background:var(--logout-color); color:#fff; font-size: 1.1rem; padding: .8rem 1.2rem; border: none;}
+    .btn-logout-dev{background:var(--logout-dev-color); color:#fff; font-size: 1.1rem; padding: .8rem 1.2rem; border: none;}
+    
+    /* 4. Drawer & Navigation (Updated Colors) */
+    .drawer{position:fixed;top:0;bottom:0;right:0;width:305px;background:var(--drawer-bg);color:var(--drawer-text);transform:translateX(110%);transition:transform .3s ease;padding:18px 16px 90px 16px;z-index:60; max-width: 85vw;}
     .drawer.open{transform:translateX(0)}
-    .drawer a{display:flex;align-items:center;gap:.6rem;padding:.65rem .8rem;border-radius:.8rem;color:#e5e7eb}
-    .drawer a:hover{background:rgba(255,255,255,.08)}
+    
+    /* Link Style */
+    .drawer a{
+        display:flex;
+        align-items:center;
+        gap:.6rem;
+        border-radius:.8rem;
+        /* Default item color is light gray/white on dark background */
+        color:var(--drawer-text); 
+        padding:.65rem .8rem; 
+        transition: background .15s, color .15s;
+        font-weight: 600;
+    }
+    .drawer a:hover{background:var(--drawer-hover)}
+    
+    /* Active Link Style (Requested: No specific background, just white text + yellow dot) */
+    .drawer a.active{
+        background:none; 
+        color:#fff;
+        font-weight: 700;
+    }
+    
+    /* Active Pill (The word 'الحالي') */
+    .drawer a.active .active-pill{
+        background:#fff;
+        color:var(--ink);
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-right: 6px;
+    }
     .drawer .footer-fixed{position:absolute;bottom:14px;left:16px;right:16px}
-    .bubble{border:1px dashed #cbd5e1;border-radius:1rem;padding:1rem}
+    
+    /* 5. Misc */
+    .bubble{border:1px dashed var(--muted);border-radius:1rem;padding:1rem}
     .mono{font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
     .fade-enter{animation:fade .25s ease}
     @keyframes fade{from{opacity:.0;transform:translateY(4px)}to{opacity:1;transform:none}}
     .toast{position:fixed;bottom:18px;right:18px;z-index:80}
+    .float-anim{animation:float 3s ease-in-out infinite}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+    
+    /* 6. Modal Styling */
+    .modal-overlay {position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 100; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(2px);}
+    /* Increased modal size slightly for better button display */
+    .modal-content {background: var(--surface); padding: 1.5rem; border-radius: 1rem; max-width: 90vw; width: 450px; box-shadow: var(--card-shadow);}
+
+    /* 7. Responsive Adjustments */
+    @media (max-width: 767px) {
+        .card { padding: 1rem; }
+        .drawer { width: 85vw; }
+        /* Smaller font size for mobile utility elements */
+        .btn { font-size: 0.9rem; padding: .6rem .8rem; } 
+        .drawer a { font-size: 0.95rem; }
+        .modal-content {width: 90vw;}
+    }
+    
+    /* 8. Project Host height adjustment for mobile */
+    #projectHost { min-height: 50vh; height: auto; }
+    @media (min-width: 768px) {
+        #projectHost { height: 60vh; }
+    }
   </style>
 </head>
 <body class="min-h-screen">
-  <!-- Top App Bar -->
-  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
+  
+  <div id="logoutModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="font-black text-lg mb-4">تأكيد تسجيل الخروج</h3>
+      <p class="text-sm mb-6">هل أنت متأكد من أنك تود تسجيل الخروج؟</p>
+      <div class="flex justify-end gap-3">
+        <button id="cancelLogoutBtn" class="btn btn-plain">إلغاء</button>
+        <button id="confirmLogoutBtn" class="btn btn-danger">تسجيل خروج</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200 transition duration-300">
     <div class="mx-auto max-w-6xl px-3 py-2 flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <button id="openDrawerBtn" class="btn btn-plain" title="القائمة">
-          <!-- Hamburger -->
+        <button id="openDrawerBtn" class="btn btn-plain p-2" title="القائمة" style="width: auto;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-        <h1 class="font-black tracking-tight">بوابة الدخول والمشاريع</h1>
+        <h1 id="appBarTitle" class="font-black tracking-tight text-xl sm:text-lg">خاص لمكتب شيخ هادي علي</h1>
       </div>
-      <div id="onlinePill" class="chip"><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span> متصل</div>
+      <div class="flex items-center gap-2">
+        <div id="onlinePill" class="chip"><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span> متصل</div>
+      </div>
     </div>
   </header>
 
-  <!-- Drawer (لا يظهر أثناء شاشة التسجيل) -->
   <aside id="drawer" class="drawer">
     <div class="flex items-center justify-between mb-2">
-      <div class="font-extrabold text-lg">المشاريع</div>
-      <button id="closeDrawerBtn" class="btn btn-plain" title="إغلاق">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      <div class="font-extrabold text-lg text-white">المشاريع</div>
+      <button id="closeDrawerBtn" class="p-2 rounded-full text-white hover:bg-slate-700 transition" title="إغلاق" style="width: auto;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </div>
-    <nav id="projectsList" class="space-y-1 overflow-y-auto" style="max-height: 70vh;"></nav>
+    
+    <nav id="projectsList" class="space-y-1 overflow-y-auto" style="max-height: 55vh;"></nav>
 
-    <div class="footer-fixed">
-      <a id="aboutDevBtn" href="#" class="hover:no-underline"><span class="chip">حول المطوّر</span></a>
-      <div class="mt-3 grid grid-cols-4 gap-2 items-center">
-        <button id="logoutBtn" class="btn btn-danger col-span-1">خروج</button>
-        <!-- ثلاث أيقونات ثابتة -->
-        <a id="socWa" class="btn btn-plain justify-center" target="_blank" rel="noopener" title="واتساب" href="#">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M.057 24l1.687-6.163A10.9 10.9 0 0 1 0 10.989C0 4.93 4.93 0 10.988 0a10.95 10.95 0 0 1 7.78 3.223 10.95 10.95 0 0 1 3.222 7.78c0 6.059-4.93 10.988-10.988 10.988a10.9 10.9 0 0 1-5.21-1.354L.057 24zM6.6 19.36c1.676.995 3.276 1.591 4.388 1.591h.004c4.987 0 9.06-4.073 9.06-9.06.002-2.423-.942-4.701-2.652-6.412A9.02 9.02 0 0 0 10.99 1.5C6.003 1.5 1.93 5.573 1.93 10.56c0 1.75.46 3.457 1.334 4.956l-.88 3.226 3.216-.86z"/></svg>
+    <div class="footer-fixed flex flex-col gap-2 items-center">
+      <button id="aboutDevBtn" class="btn w-full justify-center bg-white text-slate-800 hover:bg-slate-200" style="border: none; font-size: 1rem; border-radius: 1.5rem;">حول المطوّر</button>
+      
+      <button id="userLogoutBtn" class="btn btn-logout-custom w-full mt-1 justify-center rounded-[1.5rem]" style="width: 100%;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <span>تسجيل خروج (مستخدم)</span>
+      </button>
+
+      <button id="devLogoutBtn" class="btn btn-logout-dev w-full mt-1 justify-center rounded-[1.5rem] hidden" style="width: 100%;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <span>تسجيل خروج (مطوّر)</span>
+      </button>
+      
+      <div class="mt-3 flex gap-4 items-center justify-center">
+        
+        <a id="socWa" target="_blank" rel="noopener" title="واتساب" href="#"
+           class="bg-green-500 hover:bg-green-600 text-white rounded-full w-11 h-11 flex items-center justify-center shadow-lg transition-all duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12.04 2C6.57 2 2 6.57 2 12.04c0 1.99.52 3.94 1.52 5.66L2 22l4.43-1.48A10.02 10.02 0 0 0 12.04 22C17.5 22 22 17.43 22 11.96 22 6.57 17.5 2 12.04 2zm0 18.36c-1.79 0-3.54-.5-5.06-1.45l-.36-.22-2.63.88.88-2.56-.23-.38A8.15 8.15 0 0 1 3.64 12a8.42 8.42 0 0 1 8.4-8.36c4.63 0 8.4 3.76 8.4 8.36s-3.77 8.36-8.4 8.36zm4.71-6.28c-.26-.13-1.54-.76-1.77-.85-.24-.09-.41-.13-.59.13-.18.27-.67.85-.82 1.03-.15.18-.3.2-.56.07a6.79 6.79 0 0 1-2-1.23 7.54 7.54 0 0 1-1.4-1.74c-.15-.26-.02-.4.11-.53.12-.12.27-.32.41-.48.13-.16.18-.27.27-.45.09-.18.05-.33-.02-.46-.07-.13-.59-1.42-.81-1.94-.21-.5-.42-.43-.59-.43h-.5c-.17 0-.45.06-.69.33-.24.27-.9.88-.9 2.15 0 1.27.92 2.5 1.05 2.67.13.18 1.8 2.87 4.36 4.02.61.26 1.08.42 1.45.54.61.19 1.17.16 1.61.1.49-.07 1.54-.63 1.76-1.24.22-.61.22-1.14.15-1.25-.06-.11-.24-.18-.5-.31z"/>
+          </svg>
         </a>
-        <a id="socTg" class="btn btn-plain justify-center" target="_blank" rel="noopener" title="تيليجرام" href="#">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M9.036 15.186l-.398 5.607c.57 0 .816-.245 1.111-.54l2.665-2.56 5.527 4.04c1.013.56 1.733.266 2.013-.94l3.647-17.083h.001c.324-1.51-.546-2.1-1.537-1.73L1.12 9.31c-1.477.574-1.455 1.398-.25 1.77l5.76 1.797 13.4-8.45c.63-.39 1.207-.175.734.25"/></svg>
+        
+        <a id="socTg" target="_blank" rel="noopener" title="تيليجرام" href="#" 
+           class="bg-sky-500 hover:bg-sky-600 text-white rounded-full w-11 h-11 flex items-center justify-center shadow-lg transition-all duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6" viewBox="0 0 24 24">
+            <path d="M9.036 15.47 8.85 19.77c.4 0 .58-.18.79-.4l1.9-1.81 3.94 2.89c.72.4 1.24.19 1.43-.67l2.6-12.18.002-.001c.23-1.08-.39-1.51-1.09-1.24l-15.3 5.9c-1.05.42-1.03 1.03-.18 1.31l3.93 1.23L16.4 8.02c.38-.23.72-.1.44.13"/>
+          </svg>
         </a>
-        <a id="socIg" class="btn btn-plain justify-center" target="_blank" rel="noopener" title="إنستغرام" href="#">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm0 2h10c1.654 0 3 1.346 3 3v10c0 1.654-1.346 3-3 3H7c-1.654 0-3-1.346-3-3V7c0-1.654 1.346-3 3-3zm11 1a1 1 0 100 2 1 1 0 000-2zM12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
+
+        <a id="socIg" target="_blank" rel="noopener" title="إنستغرام" href="#" 
+           class="bg-gradient-to-tr from-pink-500 to-yellow-400 text-white rounded-full w-11 h-11 flex items-center justify-center shadow-lg transition-all duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6" viewBox="0 0 24 24">
+            <path d="M7.75 2h8.5A5.76 5.76 0 0 1 22 7.75v8.5A5.76 5.76 0 0 1 16.25 22h-8.5A5.76 5.76 0 0 1 2 16.25v-8.5A5.76 5.76 0 0 1 7.75 2Zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5A4.25 4.25 0 0 0 20.5 16.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5Zm4.25 3.25a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm0 1.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm5.75-.88a1.12 1.12 0 1 1 0 2.25 1.12 1.12 0 0 1 0-2.25Z"/>
+          </svg>
         </a>
       </div>
     </div>
   </aside>
 
-  <!-- Main Container -->
   <main class="mx-auto max-w-6xl px-3 py-6 space-y-6">
-    <!-- Maintenance Banner -->
     <section id="maintenanceBanner" class="hidden card fade-enter border border-amber-200 bg-amber-50">
       <div class="flex items-start gap-3">
         <div class="pt-1"><span class="inline-block w-3 h-3 rounded-full bg-amber-500"></span></div>
@@ -89,21 +220,49 @@
       </div>
     </section>
 
-    <!-- Auth (واجهة واحدة) -->
     <section id="authView" class="card fade-enter">
-      <h2 class="font-black text-xl mb-3">تسجيل الدخول</h2>
-      <div class="bubble">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-black text-xl">تسجيل الدخول</h2>
+      </div>
+      
+      <div class="bubble mb-6">
         <h3 class="font-extrabold mb-2">أدخل الكود</h3>
-        <p class="text-sm text-slate-600 mb-3">إذا كان كود مطوّر ستدخل لوحة المطوّر، وإذا كان كود مستخدم سيتم فتح أول مشروع مباشرة.</p>
+        <p class="text-sm text-slate-600 mb-3">قم بلصق الكود للدخول</p>
         <form id="userLoginForm" class="space-y-2">
-          <input required id="userCodeInput" class="w-full rounded-xl border px-3 py-2" placeholder="أدخل الكود" />
-          <button class="btn btn-primary w-full" type="submit">دخول</button>
-          <div class="text-xs text-slate-500">لأول مرة تحتاج اتصال إنترنت للتحقّق من كود المستخدم. بعد ذلك تعمل المشاريع بدون إنترنت.</div>
+          <input required id="userCodeInput" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2" placeholder="أدخل الكود" />
+          <div class="flex justify-center">
+            <button class="btn btn-primary" type="submit">دخول</button>
+          </div>
+          <div class="text-xs text-slate-500 text-center">لأول مرة تحتاج اتصال إنترنت للتحقّق من كود المستخدم.</div>
         </form>
+      </div>
+      
+      <div class="mt-8 text-center">
+          <h3 class="font-extrabold mb-3">تواصل معنا</h3>
+          <div class="flex flex-wrap justify-center gap-2">
+            <a id="authWa" class="btn border-green-500 text-green-700 hover:bg-green-50" target="_blank" rel="noopener" href="#">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M.057 24l1.687-6.163A10.9 10.9 0 0 1 0 10.989C0 4.93 4.93 0 10.988 0a10.95 10.95 0 0 1 7.78 3.223 10.95 10.95 0 0 1 3.222 7.78c0 6.059-4.93 10.988-10.988 10.988a10.9 10.9 0 0 1-5.21-1.354L.057 24zM6.6 19.36c1.676.995 3.276 1.591 4.388 1.591h.004c4.987 0 9.06-4.073 9.06-9.06.002-2.423-.942-4.701-2.652-6.412A9.02 9.02 0 0 0 10.99 1.5C6.003 1.5 1.93 5.573 1.93 10.56c0 1.75.46 3.457 1.334 4.956l-.88 3.226 3.216-.86z"/></svg>
+                تواصل عبر الواتساب
+            </a>
+            <a id="authTg" class="btn border-blue-400 text-blue-600 hover:bg-blue-50" target="_blank" rel="noopener" href="#">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zm4.2 8.4l-1.8 8.8c-.1.4-.4.5-.8.3l-2.4-1.7-1.1 1.1c-.2.2-.4.4-.8.4h-.1c-.3 0-.5-.2-.5-.5v-2.2l-3.3-2.6c-.4-.4-.3-.7.1-.6l10-4c.4-.2.7-.1.6.3z"/></svg>
+                تواصل عبر تيليجرام
+            </a>
+            <a id="authIg" class="btn border-pink-500 text-pink-700 hover:bg-pink-50" target="_blank" rel="noopener" href="#">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #E1306C;">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
+                تواصل عبر إنستغرام
+            </a>
+          </div>
+          <div class="mt-4 text-xs text-slate-500 float-anim">
+            &copy; حقوق ملكية محفظة : By_@Memu199.
+          </div>
       </div>
     </section>
 
-    <!-- User Dashboard -->
     <section id="userView" class="hidden fade-enter">
       <div class="card mb-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -118,61 +277,56 @@
         </div>
       </div>
       
-        <div class="card md:col-span-2">
-          <h3 class="font-extrabold mb-2">منطقة العرض</h3>
-          <div id="projectHost" class="rounded-xl border h-[60vh] overflow-auto p-3 bg-white"></div>
-        </div>
+      <div class="card">
+        <h3 class="font-extrabold mb-2">منطقة العرض</h3>
+        <div id="projectHost" class="rounded-xl border border-slate-200 overflow-auto p-3 bg-white"></div>
       </div>
     </section>
 
-    <!-- Developer Panel -->
     <section id="devView" class="hidden fade-enter">
       <div class="card mb-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-2">
-            <span class="chip">لوحة المطوّر</span>
-            <button id="toProjectsTab" class="btn btn-plain">المشاريع</button>
-            <button id="toCodesTab" class="btn btn-plain">الأكواد</button>
-            <button id="toSettingsTab" class="btn btn-plain">الإعدادات</button>
+        <div class="flex flex-wrap items-center justify-start gap-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="toProjectsTab" class="btn btn-plain text-sm p-2">المشاريع</button>
+            <button id="toCodesTab" class="btn btn-plain text-sm p-2">الأكواد</button>
+            <button id="toSettingsTab" class="btn btn-plain text-sm p-2">الإعدادات</button>
+            <button id="toAboutDevTab" class="btn btn-plain text-sm p-2">حول المطوّر</button>
           </div>
-          <button id="devLogoutBtn" class="btn btn-danger">خروج المطوّر</button>
         </div>
       </div>
 
       <div id="devTabs" class="space-y-6">
-        <!-- Projects Tab -->
         <div id="projectsTab" class="card">
           <h3 class="font-extrabold mb-3">إضافة / ترتيب المشاريع</h3>
           <form id="addProjectForm" class="space-y-3">
-            <input id="projName" class="w-full rounded-xl border px-3 py-2" placeholder="اسم المشروع (مثال: مادة 140)" required />
-            <textarea id="projHTML" class="w-full rounded-xl border px-3 py-2 mono" rows="10" placeholder="ألصق كود HTML الكامل هنا" required></textarea>
+            <input required id="projName" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2" placeholder="اسم المشروع (مثال: مادة 140)" />
+            <textarea required id="projHTML" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 mono" rows="10" placeholder="ألصق كود HTML الكامل للمشروع هنا"></textarea>
             <div class="flex flex-wrap gap-2">
-              <button class="btn btn-primary" type="submit">إضافة إلى القائمة الجانبية</button>
+              <button id="addProjectSubmitBtn" class="btn btn-primary" type="submit">إضافة إلى القائمة الجانبية</button>
               <button id="clearProjectForm" class="btn btn-plain" type="button">تفريغ الحقول</button>
             </div>
-            <div class="text-xs text-slate-500">سيتم حفظ المشروع في Firestore ومزامنته محلياً للعمل بدون إنترنت.</div>
+            <div class="text-xs text-slate-500">سيتم حفظ المشروع في Firestore ومزامنته محلياً.</div>
           </form>
 
-          <hr class="my-4"/>
+          <hr class="my-4 border-slate-200"/>
           <h4 class="font-extrabold mb-2">المشاريع الحالية</h4>
           <div id="projectsManager" class="space-y-2"></div>
         </div>
 
-        <!-- Codes Tab -->
         <div id="codesTab" class="card hidden">
           <h3 class="font-extrabold mb-3">توليد أكواد المستخدمين وإدارتها</h3>
           <form id="genCodeForm" class="grid md:grid-cols-4 gap-2 items-end">
             <div class="md:col-span-1">
               <label class="text-sm">اسم المستخدم (إجباري)</label>
-              <input id="gcUsername" required class="w-full rounded-xl border px-3 py-2" placeholder="مثال: علي محسن" />
+              <input id="gcUsername" required class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2" placeholder="مثال: علي محسن" />
             </div>
             <div>
               <label class="text-sm">المدّة</label>
-              <input id="gcAmount" type="number" min="1" value="1" class="w-full rounded-xl border px-3 py-2" />
+              <input id="gcAmount" type="number" min="1" value="1" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2" />
             </div>
             <div>
               <label class="text-sm">الوحدة</label>
-              <select id="gcUnit" class="w-full rounded-xl border px-3 py-2">
+              <select id="gcUnit" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2">
                 <option value="minutes">دقائق</option>
                 <option value="hours">ساعات</option>
                 <option value="days" selected>أيام</option>
@@ -185,15 +339,15 @@
           </form>
 
           <div class="mt-4 overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm min-w-[700px]">
               <thead>
-                <tr class="text-left border-b">
-                  <th class="py-2">المستخدم</th>
-                  <th>الكود</th>
-                  <th>الصلاحية</th>
-                  <th>الحالة</th>
-                  <th>استخدام الآن</th>
-                  <th>إجراءات</th>
+                <tr class="text-left border-b border-slate-200">
+                  <th class="py-2 px-1">المستخدم</th>
+                  <th class="py-2 px-1">الكود</th>
+                  <th class="py-2 px-1">الصلاحية</th>
+                  <th class="py-2 px-1">الحالة</th>
+                  <th class="py-2 px-1">استخدام الآن</th>
+                  <th class="py-2 px-1">إجراءات</th>
                 </tr>
               </thead>
               <tbody id="codesTable"></tbody>
@@ -201,7 +355,6 @@
           </div>
         </div>
 
-        <!-- Settings Tab -->
         <div id="settingsTab" class="card hidden">
           <h3 class="font-extrabold mb-3">إعدادات عامة</h3>
           <form id="settingsForm" class="grid md:grid-cols-3 gap-3">
@@ -209,37 +362,49 @@
               <label class="text-sm font-bold">وضع الصيانة</label>
               <div class="mt-2 flex items-center gap-2">
                 <input id="maintenanceToggle" type="checkbox" class="scale-125"/>
-                <span class="text-sm text-slate-600">عند التفعيل: يمنع تسجيل الدخول للمستخدمين الجدد ويعرض إشعار الصيانة.</span>
+                <span class="text-sm text-slate-600">يمنع تسجيل الدخول للمستخدمين الجدد.</span>
               </div>
             </div>
             <div>
               <label class="text-sm font-bold">رابط واتساب</label>
-              <input id="setWa" class="w-full rounded-xl border px-3 py-2" placeholder="https://wa.me/"/>
+              <input id="setWa" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2" placeholder="https://wa.me/"/>
             </div>
             <div>
               <label class="text-sm font-bold">رابط تيليجرام</label>
-              <input id="setTg" class="w-full rounded-xl border px-3 py-2" placeholder="https://t.me/"/>
+              <input id="setTg" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2" placeholder="https://t.me/"/>
             </div>
             <div>
               <label class="text-sm font-bold">رابط إنستغرام</label>
-              <input id="setIg" class="w-full rounded-xl border px-3 py-2" placeholder="https://instagram.com/"/>
+              <input id="setIg" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2" placeholder="https://instagram.com/"/>
             </div>
             <div class="md:col-span-3">
               <label class="text-sm font-bold">كود المطوّر</label>
-              <input id="setDevKey" class="w-full rounded-xl border px-3 py-2" placeholder="ضع كود دخول المطوّر"/>
+              <input id="setDevKey" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2" placeholder="ضع كود دخول المطوّر"/>
             </div>
             <div class="md:col-span-3">
               <button class="btn btn-primary" type="submit">حفظ الإعدادات</button>
             </div>
           </form>
         </div>
+        
+        <div id="aboutDevTab" class="card hidden">
+          <h3 class="font-extrabold mb-3">إعدادات صفحة "حول المطوّر"</h3>
+          <form id="aboutDevForm" class="space-y-3">
+            <textarea id="aboutDevHTML" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 mono" rows="10" placeholder="ألصق كود HTML الكامل هنا لصفحة حول المطوّر"></textarea>
+            <button class="btn btn-primary" type="submit">حفظ محتوى حول المطوّر</button>
+          </form>
+        </div>
+        
       </div>
     </section>
   </main>
 
   <div id="toast" class="toast hidden"></div>
+  
+  <div id="projectFooter" class="fixed bottom-0 right-0 left-0 text-center p-2 bg-slate-800 text-white text-xs opacity-90 transition duration-500 float-anim hidden">
+    &copy; حقوق ملكية محفظة : By_@Memu199.
+  </div>
 
-  <!-- Firebase + App Script -->
   <script type="module">
     /*********************************
      * ١) Firebase
@@ -250,7 +415,7 @@
       addDoc, deleteDoc, query, orderBy, serverTimestamp, enableIndexedDbPersistence
     } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-    // ✅ CONFIG الذي أرسلته
+    // CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyBXN4njw1kCHPV28kEYmAk_8a0iazlkbfY",
       authDomain: "memu99m.firebaseapp.com",
@@ -269,15 +434,23 @@
      * ٢) DOM helpers
      *********************************/
     const $ = (s)=>document.querySelector(s);
+    const $$ = (s)=>document.querySelectorAll(s);
+    const body = $('body');
+    const html = $('html');
     const drawer = $('#drawer');
     const openDrawerBtn = $('#openDrawerBtn');
     const closeDrawerBtn = $('#closeDrawerBtn');
     const projectsList = $('#projectsList');
     const projectHost = $('#projectHost');
-    const logoutBtn = $('#logoutBtn');
-    const aboutDevBtn = $('#aboutDevBtn');
+    
+    // 🔔 تم إضافة تعريف الزرين الجديدين هنا 🔔
+    const userLogoutBtn = $('#userLogoutBtn'); 
+    const devLogoutBtn = $('#devLogoutBtn'); 
+    
+    const appBarTitle = $('#appBarTitle');
     const onlinePill = $('#onlinePill');
     const toastEl = $('#toast');
+    const projectFooter = $('#projectFooter');
 
     const maintenanceBanner = $('#maintenanceBanner');
     const authView = $('#authView');
@@ -293,18 +466,23 @@
     const toProjectsTab = $('#toProjectsTab');
     const toCodesTab = $('#toCodesTab');
     const toSettingsTab = $('#toSettingsTab');
+    const toAboutDevTab = $('#toAboutDevTab');
 
     const projectsTab = $('#projectsTab');
     const codesTab = $('#codesTab');
     const settingsTab = $('#settingsTab');
+    const aboutDevTab = $('#aboutDevTab');
 
     const addProjectForm = $('#addProjectForm');
+    const addProjectSubmitBtn = $('#addProjectSubmitBtn');
     const projName = $('#projName');
-    const projHTML = $('#projHTML');
+    // 🔔 تم تعديل تعريف حقل HTML ليطابق الكود 🔔
+    const projHTML = $('#projHTML'); 
     const clearProjectForm = $('#clearProjectForm');
     const projectsManager = $('#projectsManager');
 
     const genCodeForm = $('#genCodeForm');
+    const genCodeSubmitBtn = genCodeForm.querySelector('[type="submit"]');
     const gcUsername = $('#gcUsername');
     const gcAmount = $('#gcAmount');
     const gcUnit = $('#gcUnit');
@@ -316,6 +494,9 @@
     const setTg = $('#setTg');
     const setIg = $('#setIg');
     const setDevKey = $('#setDevKey');
+    
+    const aboutDevForm = $('#aboutDevForm');
+    const aboutDevHTML = $('#aboutDevHTML');
 
     const socWa = $('#socWa');
     const socTg = $('#socTg');
@@ -323,9 +504,20 @@
     const mWa = $('#mWa');
     const mTg = $('#mTg');
     const mIg = $('#mIg');
+    
+    const authWa = $('#authWa');
+    const authTg = $('#authTg');
+    const authIg = $('#authIg');
+    const aboutDevBtn = $('#aboutDevBtn'); // تعريف زر "حول المطوّر"
+    
+    // Logout Modal Elements
+    const logoutModal = $('#logoutModal');
+    const confirmLogoutBtn = $('#confirmLogoutBtn');
+    const cancelLogoutBtn = $('#cancelLogoutBtn');
+
 
     /*********************************
-     * ٣) Helpers
+     * 3) Helpers
      *********************************/
     const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
     const deviceId = (function(){
@@ -333,7 +525,7 @@
       if(!id){ id = crypto.randomUUID(); localStorage.setItem('deviceId', id); }
       return id;
     })();
-
+    
     function showToast(msg){
       toastEl.classList.remove('hidden');
       toastEl.innerHTML = `<div class="card">${msg}</div>`;
@@ -371,18 +563,84 @@
                   : '<span class="chip">غير مستخدم</span>';
     }
     function escapeHtml(s){ return s.replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+    // تنقية أساسية تمنع XSS: تزيل <script> وسمات on* وروابط javascript:
+function sanitizeHtml(unsafeHtml){
+  const tpl = document.createElement('template');
+  tpl.innerHTML = unsafeHtml ?? '';
+  // إزالة كل السكربتات
+  tpl.content.querySelectorAll('script').forEach(n=>n.remove());
+  // إزالة on* والـ javascript: من href/src
+  const walker = document.createTreeWalker(tpl.content, NodeFilter.SHOW_ELEMENT);
+  while(walker.nextNode()){
+    const el = walker.currentNode;
+    for(const attr of Array.from(el.attributes)){
+      if(/^on/i.test(attr.name)) el.removeAttribute(attr.name);
+      if(/^(href|src)$/i.test(attr.name) && /^javascript:/i.test(attr.value)) el.removeAttribute(attr.name);
+    }
+  }
+  return tpl.innerHTML;
+}
 
     /*********************************
-     * ٤) جلسة
+     * ٤) جلسة + وضع العرض - الإصلاح هنا
      *********************************/
+    let editingProjectId = null;
+    let editingCodeId = null;
+    let activeProjectId = null;
+    
     const session = {
-      get(){ try{return JSON.parse(localStorage.getItem('session')||'null')}catch{return null} },
-      set(obj){ localStorage.setItem('session', JSON.stringify(obj)); },
-      clear(){ localStorage.removeItem('session'); }
+      get(){ 
+        try{
+          const ses = localStorage.getItem('session');
+          console.log('قراءة الجلسة من localStorage:', ses);
+          return ses ? JSON.parse(ses) : null;
+        }catch(e){
+          console.error('خطأ في قراءة الجلسة:', e);
+          return null;
+        }
+      },
+      set(obj){
+        try{
+          console.log('حفظ الجلسة في localStorage:', obj);
+          localStorage.setItem('session', JSON.stringify(obj)); 
+        }catch(e){
+          console.error('خطأ في حفظ الجلسة:', e);
+        }
+      },
+      clear(){ 
+        console.log('مسح الجلسة');
+        localStorage.removeItem('session'); 
+      }
     };
+    
     function setView(view){
+      const ses = session.get();
+      console.log('setView called - الجلسة:', ses, 'العرض المطلوب:', view.id);
+      
       for(const el of [authView,userView,devView]) el.classList.add('hidden');
       view.classList.remove('hidden');
+      
+      const showDrawer = (view !== authView);
+      openDrawerBtn.classList.toggle('hidden', !showDrawer); 
+      projectFooter.classList.toggle('hidden', view !== userView);
+      
+      // Update AppBar Title
+      appBarTitle.textContent = (view === devView) ? 'لوحة المطوّر' : 'خاص لمكتب شيخ هادي علي';
+      
+      // 🔔 منطق إظهار/إخفاء أزرار تسجيل الخروج 🔔
+      const isDev = (ses?.role === 'dev');
+      
+      // إخفاء زر تسجيل الخروج الخاص بالمستخدم في حالة المطوّر
+      userLogoutBtn.classList.toggle('hidden', isDev);
+      // إخفاء زر تسجيل الخروج الخاص بالمطوّر في حالة المستخدم العادي
+      devLogoutBtn.classList.toggle('hidden', !isDev);
+      
+      // Fix: Hide drawer when logging out or switching to authView
+      if (view === authView) {
+        drawer.classList.remove('open');
+      }
+      
+      console.log('setView completed - العرض الحالي:', view.id);
     }
 
     /*********************************
@@ -394,23 +652,26 @@
       const sRef = doc(db, 'settings', 'main');
       settingsDocUnsub = onSnapshot(sRef, (snap)=>{
         const s = snap.exists()? snap.data(): {};
-        const { maintenance=false, wa='#', tg='#', ig='#', devKey='' } = s;
+        const { maintenance=false, wa='#', tg='#', ig='#', devKey='', aboutDevHtml='' } = s;
+        
         maintenanceToggle.checked = !!maintenance;
         setWa.value = wa || '';
         setTg.value = tg || '';
         setIg.value = ig || '';
         setDevKey.value = devKey || '';
+        aboutDevHTML.value = aboutDevHtml || '';
 
-        [socWa,mWa].forEach(a=>a.href = wa||'#');
-        [socTg,mTg].forEach(a=>a.href = tg||'#');
-        [socIg,mIg].forEach(a=>a.href = ig||'#');
+        // Update all social links (Drawer, Maintenance, Auth View)
+        [socWa, mWa, authWa].forEach(a=>a.href = wa||'#');
+        [socTg, mTg, authTg].forEach(a=>a.href = tg||'#');
+        [socIg, mIg, authIg].forEach(a=>a.href = ig||'#');
 
         const ses = session.get();
         maintenanceBanner.classList.toggle('hidden', !maintenance);
         if(maintenance){
           if(ses && ses.role==='user' && navigator.onLine){
             showToast('النظام في صيانة — تم تسجيل خروجك');
-            doLogout();
+            doLogout(true, false, true); // Force logout without confirmation
           }
         }
       });
@@ -426,6 +687,14 @@
         devKey: setDevKey.value.trim()
       }, { merge:true });
       showToast('تم حفظ الإعدادات');
+    });
+    
+    aboutDevForm.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const html = aboutDevHTML.value;
+        const sRef = doc(db, 'settings', 'main');
+        await setDoc(sRef, { aboutDevHtml: html }, { merge:true });
+        showToast('تم حفظ محتوى "حول المطوّر"');
     });
 
     /*********************************
@@ -446,10 +715,23 @@
       if(boundTo && boundTo !== deviceId){
         return { ok:false, reason:'هذا الكود مستخدم على جهاز آخر', data };
       }
+      
+      if(!used || !boundTo){
+          await setDoc(ref, { used:true, boundTo: deviceId, lastSeen: nowTs() }, {merge:true});
+      }
+      
+      // Update DB state if session is no longer valid
+      if(!validTime || revoked || suspended){
+          session.clear(); 
+          if(data.used && data.boundTo === deviceId){
+             await setDoc(ref, { used: false, boundTo: '' }, {merge:true});
+          }
+      }
 
       await setDoc(ref, { used:true, boundTo: deviceId, lastSeen: nowTs() }, {merge:true});
       return { ok:true, data:{...data, username, expiresAt:exp, used:true, boundTo:deviceId} };
     }
+    
     async function revalidateIfNeeded(){
       const ses = session.get();
       if(!ses || ses.role!=='user') return;
@@ -459,14 +741,14 @@
         codeStatusPill.innerHTML = statusPillHtml(false);
         showToast(res.reason||'انتهت الجلسة');
         await sleep(600);
-        doLogout();
+        doLogout(false, false, true); // Force logout without confirmation
       }else{
         codeStatusPill.innerHTML = statusPillHtml(true);
       }
     }
 
     /*********************************
-     * ٧) تسجيل الدخول (واجهة واحدة)
+     * ٧) تسجيل الدخول
      *********************************/
     userLoginForm.addEventListener('submit', async (e)=>{
       e.preventDefault();
@@ -474,12 +756,15 @@
       if(!inputCode) return;
 
       // مطوّر؟
-      if(inputCode && inputCode.trim() === (setDevKey.value.trim() || '')){
+      const settingsSnap = await getDoc(doc(db, 'settings', 'main'));
+      const devKey = settingsSnap.data()?.devKey || '';
+
+      if(inputCode && inputCode.trim() === devKey.trim()){
         session.set({ role:'dev' });
         setView(devView);
         watchProjects();
         listenCodes();
-        watchSettings();
+        showTab('projects');
         showToast('أهلاً بالمطوّر 👨‍💻');
         return;
       }
@@ -512,12 +797,49 @@
     /*********************************
      * ٨) الخروج
      *********************************/
-    function doLogout(){
+    let isDevLogout = false;
+
+    async function doLogout(clearDbState=true, showConfirmation=true, forced=false){
+      const ses = session.get();
+      isDevLogout = ses?.role === 'dev';
+
+      if(showConfirmation && !forced){
+        logoutModal.classList.remove('hidden');
+        // 🔔 تحديث نص زر التأكيد بناءً على الدور 🔔
+        confirmLogoutBtn.textContent = isDevLogout ? 'خروج المطوّر' : 'تسجيل خروج';
+        return;
+      }
+      
+      if(ses && ses.role==='user' && clearDbState){
+          const ref = doc(db,'one_time_codes', ses.code);
+          await updateDoc(ref, { used: false, boundTo: '' }).catch(console.error);
+      }
+      
+      activeProjectId = null;
+      renderProjectsUI();
+      
       session.clear();
-      setView(authView);
+      // FIX: Crucial Fix: ensure drawer is hidden before setting view to authView
+      drawer.classList.remove('open');
+      setView(authView); 
+      
+      showToast('تم تسجيل الخروج');
     }
-    logoutBtn.addEventListener('click', ()=>{ doLogout(); showToast('تم تسجيل الخروج'); });
-    $('#devLogoutBtn')?.addEventListener('click', ()=>{ doLogout(); showToast('تم تسجيل خروج المطوّر'); });
+
+    // 🔔 تعديل المستمعين ليتمكن زر المطوّر من تفعيل الخروج 🔔
+    userLogoutBtn.addEventListener('click', ()=>{ doLogout(true, true); });
+    devLogoutBtn.addEventListener('click', ()=>{ doLogout(false, true); }); // المطوّر لا يمسح حالة الكود
+
+    cancelLogoutBtn.addEventListener('click', ()=>{
+        logoutModal.classList.add('hidden');
+    });
+
+    confirmLogoutBtn.addEventListener('click', async ()=>{
+        logoutModal.classList.add('hidden');
+        // isDevLogout تم تعيينها سابقاً في doLogout(..., true, ...)
+        await doLogout(!isDevLogout, false); 
+    });
+
 
     /*********************************
      * ٩) المشاريع (إضافة/ترتيب/عرض)
@@ -526,25 +848,45 @@
     let cachedProjects = [];
 
     function renderProjectsUI(){
-      projectsList.innerHTML = cachedProjects.map((p)=>`
-        <a href="#" data-projid="${p.id}" class="bg-white/5 hover:bg-white/10 text-sm font-bold">
-          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
-          <span>${escapeHtml(p.name||'بدون اسم')}</span>
-        </a>
-      `).join('');
+      projectsList.innerHTML = cachedProjects.map((p)=>{
+        const isActive = p.id === activeProjectId;
+        const activeClass = isActive ? 'active' : '';
+        // Requested: Yellow dot, white text, green 'الحالي' pill
+        const dotColor = isActive ? 'var(--drawer-active-dot)' : 'var(--drawer-text)';
+        const statusPill = isActive ? '<span class="active-pill">الحالي</span>' : ''; 
+        return `
+          <a href="#" data-projid="${p.id}" class="${activeClass} flex items-center justify-between text-base font-bold">
+            <div class="flex items-center gap-3">
+              <span class="inline-block w-2 h-2 rounded-full" style="background-color: ${dotColor};"></span>
+              <span class="text-white">${escapeHtml(p.name||'بدون اسم')}</span>
+            </div>
+            ${statusPill}
+          </a>
+        `;
+      }).join('');
+      
+      // FIX: Render for aboutDevBtn - update button style if it's the active view
+      if (activeProjectId === 'aboutDev') {
+          aboutDevBtn.classList.remove('bg-white', 'text-slate-800');
+          aboutDevBtn.classList.add('bg-slate-700', 'text-white');
+      } else {
+          aboutDevBtn.classList.remove('bg-slate-700', 'text-white');
+          aboutDevBtn.classList.add('bg-white', 'text-slate-800');
+      }
 
       projectsManager.innerHTML = cachedProjects.map((p,i)=>`
-        <div class="border border-slate-200 rounded-xl p-3 bg-white text-slate-800">
+        <div class="border border-slate-200 rounded-xl p-3 bg-white">
           <div class="flex flex-wrap items-start justify-between gap-2">
             <div class="min-w-0">
               <div class="font-extrabold text-slate-900 text-sm">${escapeHtml(p.name||'بدون اسم')}</div>
               <div class="text-[11px] text-slate-500 break-all mono">ID: ${p.id}</div>
             </div>
             <div class="flex flex-wrap gap-2 text-xs">
-              <button class="btn btn-plain text-xs" data-act="up" data-pid="${p.id}">فوق↑</button>
-              <button class="btn btn-plain text-xs" data-act="down" data-pid="${p.id}">تحت↓</button>
-              <button class="btn btn-danger text-xs" data-act="del" data-pid="${p.id}">حذف</button>
-              <button class="btn btn-plain text-xs" data-act="preview" data-pid="${p.id}">معاينة</button>
+              <button class="btn btn-plain text-xs p-2" data-act="up" data-pid="${p.id}">فوق↑</button>
+              <button class="btn btn-plain text-xs p-2" data-act="down" data-pid="${p.id}">تحت↓</button>
+              <button class="btn btn-primary text-xs p-2" data-act="edit" data-pid="${p.id}">تعديل</button>
+              <button class="btn text-xs p-2" style="background-color: #ef4444; color: white;" data-act="del" data-pid="${p.id}">حذف</button>
+              <button class="btn btn-plain text-xs p-2" data-act="preview" data-pid="${p.id}">معاينة</button>
             </div>
           </div>
         </div>
@@ -564,7 +906,7 @@
       updateDoc(piRef,{order:oldJ}).catch(()=>{});
       updateDoc(pjRef,{order:oldI}).catch(()=>{});
     }
-
+    
     projectsManager.addEventListener('click', async (e)=>{
       const btn = e.target.closest('[data-act]');
       if(!btn) return;
@@ -572,19 +914,31 @@
       const pid = btn.dataset.pid;
       const idx = cachedProjects.findIndex(p=>p.id===pid);
       if(idx===-1) return;
+      const p = cachedProjects[idx];
 
       if(act==='up'){ swapOrder(idx, idx-1); renderProjectsUI(); }
-      else if(act==='down'){ swapOrder(idx, idx+1); renderProjectsUI(); }
+      else if(act==='down'){ swapOrder(idx, idx-1); renderProjectsUI(); }
       else if(act==='del'){
         if(confirm('هل تريد حذف هذا المشروع نهائياً؟')){
           await deleteDoc(doc(db,'projects',pid));
           showToast('تم الحذف');
         }
+      }else if(act==='edit'){
+          projName.value = p.name || '';
+          projHTML.value = p.html || '';
+          editingProjectId = pid;
+          addProjectSubmitBtn.textContent = 'حفظ تعديل المشروع';
+          addProjectSubmitBtn.classList.remove('btn-primary');
+          addProjectSubmitBtn.classList.add('btn-success');
+          showTab('projects');
+          showToast('تم تحميل المشروع للتعديل.');
       }else if(act==='preview'){
-        const p = cachedProjects[idx];
-        projectHost.innerHTML = p.html || '';
+        // FIX APPLIED: Project code renders directly into projectHost without sanitization
+        projectHost.innerHTML = p.html || ''; // <--- تم التعديل هنا
         setView(userView);
         drawer.classList.remove('open');
+        activeProjectId = pid;
+        renderProjectsUI();
         showToast('تمت المعاينة');
       }
     });
@@ -592,21 +946,31 @@
     projectsList.addEventListener('click',(e)=>{
       const link = e.target.closest('[data-projid]');
       if(!link) return;
+      e.preventDefault(); // Prevent default link behavior
       const pid = link.dataset.projid;
       const p = cachedProjects.find(x=>x.id===pid);
       if(!p) return;
-      projectHost.innerHTML = p.html || '';
+      
+      // FIX APPLIED: Project code renders directly into projectHost without sanitization
+      projectHost.innerHTML = p.html || ''; // <--- تم التعديل هنا
+      
       drawer.classList.remove('open');
+      
+      activeProjectId = pid;
+      renderProjectsUI();
     });
 
-    // أول مشروع تلقائياً بعد دخول المستخدم
     function openFirstProjectIfAny(){
       const ses = session.get();
       if(!ses || ses.role!=='user') return;
+      
+      // Check if user is in userView and projectHost is empty
       if(userView && !userView.classList.contains('hidden')){
-        if(projectHost && (!projectHost.innerHTML || projectHost.innerHTML.trim()==='')){
-          const first = cachedProjects[0];
-          if(first){ projectHost.innerHTML = first.html || ''; }
+        const first = cachedProjects[0];
+        if(first && !activeProjectId){ 
+          projectHost.innerHTML = first.html || ''; 
+          activeProjectId = first.id;
+          renderProjectsUI();
         }
       }
     }
@@ -616,15 +980,39 @@
       const name = projName.value.trim();
       const html = projHTML.value;
       if(!name || !html){ showToast('أكمل الحقول'); return; }
-      await addDoc(collection(db,'projects'), { name, html, order: nowTs() });
-      projName.value=''; projHTML.value='';
-      showToast('تمت إضافة المشروع');
+      
+      if(editingProjectId){
+          const ref = doc(db,'projects',editingProjectId);
+          await updateDoc(ref, { name, html });
+          showToast('تم حفظ تعديلات المشروع');
+      }else{
+          // Find the current max order value
+          const maxOrder = cachedProjects.length > 0 ? cachedProjects[0].order + 1 : nowTs();
+          await addDoc(collection(db,'projects'), { name, html, order: maxOrder });
+          showToast('تمت إضافة المشروع');
+      }
+      
+      projName.value=''; 
+      projHTML.value='';
+      editingProjectId = null;
+      addProjectSubmitBtn.textContent = 'إضافة إلى القائمة الجانبية';
+      addProjectSubmitBtn.classList.remove('btn-success');
+      addProjectSubmitBtn.classList.add('btn-primary');
     });
-    clearProjectForm.addEventListener('click', ()=>{ projName.value=''; projHTML.value=''; });
+    
+    clearProjectForm.addEventListener('click', ()=>{ 
+        projName.value=''; 
+        projHTML.value=''; 
+        editingProjectId = null;
+        addProjectSubmitBtn.textContent = 'إضافة إلى القائمة الجانبية';
+        addProjectSubmitBtn.classList.remove('btn-success');
+        addProjectSubmitBtn.classList.add('btn-primary');
+    });
 
     function watchProjects(){
       if(projectsUnsub) return;
-      const qRef = query(collection(db,'projects'), orderBy('order','asc'));
+      // Order by descending order to ensure drag/drop changes are reflected
+      const qRef = query(collection(db,'projects'), orderBy('order','desc'));
       projectsUnsub = onSnapshot(qRef, (qs)=>{
         cachedProjects = [];
         qs.forEach(d=>{
@@ -646,23 +1034,29 @@
         const expTs = (typeof c.expiresAt==='number'? c.expiresAt : c.expiresAt?.toMillis?.() ?? 0);
         const stillValid = !c.revoked && !c.suspended && (nowTs() < expTs);
         const usingNow = !!(c.used && !c.suspended && !c.revoked);
+        
+        let usedPill = usedNowPillHtml(usingNow);
+        if(usingNow){
+            usedPill = `<div class="flex items-center gap-1">${usedPill} <button class="btn btn-plain text-xs p-1" data-ct-act="force-logout" data-code="${c.id}" title="تسجيل خروج إجباري">❌</button></div>`;
+        }
+
         return `
-          <tr class="border-b align-top">
-            <td class="py-2 font-bold text-slate-800">${escapeHtml(c.username||'مستخدم')}</td>
-            <td class="py-2">
+          <tr class="border-b border-slate-200 align-top">
+            <td class="py-2 px-1 font-bold text-slate-800">${escapeHtml(c.username||'مستخدم')}</td>
+            <td class="py-2 px-1">
               <div class="flex flex-wrap items-center gap-2 mono text-[13px] break-all">
                 <span>${c.id}</span>
-                <button class="btn btn-plain text-xs" data-ct-act="copy" data-code="${c.id}">نسخ</button>
+                <button class="btn btn-plain text-xs p-1" data-ct-act="copy" data-code="${c.id}">نسخ</button>
               </div>
             </td>
-            <td class="py-2 text-[13px] text-slate-600">${fmtDate(expTs)}</td>
-            <td class="py-2">${statusPillHtml(stillValid)}</td>
-            <td class="py-2">${usedNowPillHtml(usingNow)}</td>
-            <td class="py-2">
+            <td class="py-2 px-1 text-[13px] text-slate-600">${fmtDate(expTs)}</td>
+            <td class="py-2 px-1">${statusPillHtml(stillValid)}</td>
+            <td class="py-2 px-1">${usedPill}</td>
+            <td class="py-2 px-1">
               <div class="flex flex-wrap gap-1 text-[11px]">
-                <button class="btn btn-plain text-xs" data-ct-act="suspend" data-code="${c.id}" data-suspended="${c.suspended?'1':'0'}">${c.suspended?'إلغاء الإيقاف':'إيقاف مؤقت'}</button>
-                <button class="btn btn-plain text-xs" data-ct-act="edit" data-code="${c.id}">تعديل المدة</button>
-                <button class="btn btn-danger text-xs" data-ct-act="delete" data-code="${c.id}">حذف</button>
+                <button class="btn btn-plain text-xs p-1" data-ct-act="suspend" data-code="${c.id}" data-suspended="${c.suspended?'1':'0'}">${c.suspended?'إلغاء الإيقاف':'إيقاف مؤقت'}</button>
+                <button class="btn btn-primary text-xs p-1" data-ct-act="edit" data-code="${c.id}">تعديل المدة</button>
+                <button class="btn btn-danger text-xs p-1" data-ct-act="delete" data-code="${c.id}">حذف</button>
               </div>
             </td>
           </tr>
@@ -686,14 +1080,33 @@
       if(!username){ showToast('اسم المستخدم إجباري'); return; }
       const amount = parseInt(gcAmount.value||'1',10);
       const unit = gcUnit.value;
-      const code = randCode(8);
-      const expiresAt = addDuration(nowTs(), amount, unit);
-      const ref = doc(db,'one_time_codes', code);
-      await setDoc(ref,{
-        username, expiresAt, revoked:false, suspended:false, used:false, boundTo:'', lastSeen:0, createdAt: serverTimestamp()
-      });
-      gcUsername.value='';
-      showToast('تم إنشاء الكود: '+code);
+      
+      if(editingCodeId){
+        const ref = doc(db,'one_time_codes', editingCodeId);
+        const code = codesCache.find(c=>c.id===editingCodeId);
+        
+        const currentExp = (typeof code.expiresAt==='number'? code.expiresAt : code.expiresAt?.toMillis?.() ?? nowTs());
+        const newExp = addDuration(currentExp, amount, unit);
+        
+        await updateDoc(ref,{ username, expiresAt: newExp });
+        showToast('تم تحديث صلاحية الكود: '+editingCodeId);
+        
+        editingCodeId = null;
+        genCodeSubmitBtn.textContent = 'توليد الكود';
+        genCodeSubmitBtn.classList.remove('btn-success');
+        genCodeSubmitBtn.classList.add('btn-primary');
+        gcUsername.value=''; gcAmount.value=1; gcUnit.value='days';
+        
+      } else {
+        const code = randCode(8);
+        const expiresAt = addDuration(nowTs(), amount, unit);
+        const ref = doc(db,'one_time_codes', code);
+        await setDoc(ref,{
+          username, expiresAt, revoked:false, suspended:false, used:false, boundTo:'', lastSeen:0, createdAt: serverTimestamp()
+        });
+        gcUsername.value='';
+        showToast('تم إنشاء الكود: '+code);
+      }
     });
 
     codesTable.addEventListener('click', async (e)=>{
@@ -705,28 +1118,41 @@
       const ref = doc(db,'one_time_codes', codeId);
 
       if(act==='copy'){
-        await navigator.clipboard.writeText(codeId);
-        showToast('تم النسخ');
+        // FIX: Ensure copy functionality works on button click
+        try {
+            await navigator.clipboard.writeText(codeId);
+            showToast('تم النسخ');
+        } catch (err) {
+            showToast('فشل النسخ: حاول يدوياً');
+        }
       }else if(act==='suspend'){
         const suspended = btn.dataset.suspended === '1';
         await updateDoc(ref,{ suspended: !suspended });
         showToast(!suspended?'تم إيقاف الكود مؤقتاً':'تم إلغاء الإيقاف');
       }else if(act==='edit'){
-        const extraDaysStr = prompt('أدخل عدد الأيام الإضافية (مثال: 1)');
-        if(!extraDaysStr) return;
-        const extraDays = parseInt(extraDaysStr,10);
-        if(isNaN(extraDays) || extraDays<=0){ showToast('قيمة غير صالحة'); return; }
-        const snap = await getDoc(ref);
-        if(!snap.exists()){ showToast('لا يمكن العثور على الكود'); return; }
-        const data = snap.data();
-        const currentExp = (typeof data.expiresAt==='number'? data.expiresAt : data.expiresAt?.toMillis?.() ?? nowTs());
-        const newExp = addDuration(currentExp, extraDays, 'days');
-        await updateDoc(ref,{ expiresAt: newExp });
-        showToast('تم تحديث الصلاحية');
+          const code = codesCache.find(c=>c.id===codeId);
+          if(!code) return;
+          
+          gcUsername.value = code.username || 'مستخدم';
+          gcAmount.value = 1;
+          gcUnit.value = 'days';
+          
+          editingCodeId = codeId;
+          genCodeSubmitBtn.textContent = 'حفظ التعديل';
+          genCodeSubmitBtn.classList.remove('btn-primary');
+          genCodeSubmitBtn.classList.add('btn-success');
+          showTab('codes');
+          showToast('تم تحميل الكود للتعديل.');
+          
       }else if(act==='delete'){
         if(confirm('هل تريد حذف هذا الكود نهائياً؟')){
           await deleteDoc(ref);
           showToast('تم حذف الكود');
+        }
+      }else if(act==='force-logout'){
+        if(confirm('هل أنت متأكد من تسجيل الخروج الإجباري لهذا المستخدم؟')){
+           await updateDoc(ref, { used: false, boundTo: '' });
+           showToast('تم تسجيل الخروج الإجباري بنجاح');
         }
       }
     });
@@ -738,44 +1164,145 @@
       projectsTab.classList.add('hidden');
       codesTab.classList.add('hidden');
       settingsTab.classList.add('hidden');
-      if(which==='projects') projectsTab.classList.remove('hidden');
-      if(which==='codes') codesTab.classList.remove('hidden');
-      if(which==='settings') settingsTab.classList.remove('hidden');
+      aboutDevTab.classList.add('hidden');
+      
+      // FIX: Update Tab Button Styles to show active tab
+      [toProjectsTab, toCodesTab, toSettingsTab, toAboutDevTab].forEach(btn => {
+          btn.classList.remove('btn-primary', 'text-white');
+          btn.classList.add('btn-plain');
+      });
+
+      let activeBtn = null;
+      let activeTab = null;
+      if(which==='projects') { activeBtn = toProjectsTab; activeTab = projectsTab; }
+      if(which==='codes') { activeBtn = toCodesTab; activeTab = codesTab; }
+      if(which==='settings') { activeBtn = toSettingsTab; activeTab = settingsTab; }
+      if(which==='aboutdev') { activeBtn = toAboutDevTab; activeTab = aboutDevTab; }
+      
+      if(activeBtn){
+          activeBtn.classList.remove('btn-plain');
+          activeBtn.classList.add('btn-primary', 'text-white');
+      }
+      
+      if(activeTab) activeTab.classList.remove('hidden');
     }
     showTab('projects');
     toProjectsTab.addEventListener('click',()=>showTab('projects'));
     toCodesTab.addEventListener('click',()=>showTab('codes'));
     toSettingsTab.addEventListener('click',()=>showTab('settings'));
+    toAboutDevTab.addEventListener('click',()=>showTab('aboutdev'));
 
     /*********************************
      * ١٢) فتح/إغلاق القائمة + حول
      *********************************/
-    openDrawerBtn.addEventListener('click', ()=>{ drawer.classList.add('open'); });
-    closeDrawerBtn.addEventListener('click', ()=>{ drawer.classList.remove('open'); });
-    aboutDevBtn.addEventListener('click',(e)=>{ e.preventDefault(); showToast('هذا النظام من تطويرك ✨'); });
+    openDrawerBtn.addEventListener('click', ()=>{ 
+        drawer.classList.add('open'); 
+    });
+    closeDrawerBtn.addEventListener('click', ()=>{ 
+        drawer.classList.remove('open'); 
+    });
+    
+    aboutDevBtn.addEventListener('click', async (e)=>{ 
+        e.preventDefault(); 
+        const sRef = doc(db, 'settings', 'main');
+        const snap = await getDoc(sRef);
+        const html = snap.data()?.aboutDevHtml || '<h2>لم يتم تعيين محتوى لصفحة حول المطوّر بعد.</h2>';
+        
+        // Feature: Project code renders directly into projectHost
+        projectHost.innerHTML = html;
+        
+        drawer.classList.remove('open');
+        
+        activeProjectId = 'aboutDev';
+        renderProjectsUI(); // This now updates the 'حول المطوّر' button style
+        showToast('تم عرض صفحة حول المطوّر'); 
+        
+        // Ensure user view is active if clicked from drawer
+        if (session.get()?.role === 'user') {
+            setView(userView);
+        }
+    });
+    
+    // دالة جديدة: تعرض المشروع باستخدام iframe
+function renderProjectInHost(url){
+  // 1. فحص بسيط للرابط
+  if (!url || !url.startsWith('http')) {
+      projectHost.innerHTML = `<div class="p-4 text-center text-red-600">
+                                <h4 class="font-extrabold mb-2">خطأ في الرابط</h4>
+                                <p class="text-sm">الرابط غير صحيح أو غير متوفر حالياً.</p>
+                               </div>`;
+      return;
+  }
+  
+  // 2. استخدام iframe للعرض الآمن
+  projectHost.innerHTML = `
+    <iframe 
+      src="${url}" 
+      style="width: 100%; height: 100%; min-height: 50vh; border: none; background: white;"
+      allowfullscreen
+      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+    >
+    </iframe>
+  `;
+}
+
 
     /*********************************
-     * ١٣) تهيئة
+     * ١٣) تهيئة - الإصلاح الرئيسي هنا
      *********************************/
     async function restoreSession(){
       const ses = session.get();
-      if(!ses){ setView(authView); return; }
+      console.log('استعادة الجلسة - البيانات:', ses);
+      
+      if(!ses){ 
+        console.log('لا توجد جلسة، عرض تسجيل الدخول');
+        setView(authView); 
+        return; 
+      }
+      
       if(ses.role==='user'){
-        currentUserName.textContent = ses.username || 'مستخدم';
-        codeStatusPill.innerHTML = statusPillHtml(true);
-        setView(userView);
-        watchProjects();
-        await revalidateIfNeeded();
+        console.log('جلسة مستخدم موجودة، استعادة...');
+        try {
+          currentUserName.textContent = ses.username || 'مستخدم';
+          codeStatusPill.innerHTML = statusPillHtml(true);
+          setView(userView);
+          watchProjects();
+          
+          // التحقق من صحة الكود إذا كان هناك اتصال إنترنت
+          if(navigator.onLine){
+            console.log('الاتصال متوفر، التحقق من الكود...');
+            await revalidateIfNeeded();
+          } else {
+            console.log('لا يوجد اتصال، استخدام البيانات المخزنة محلياً');
+            codeStatusPill.innerHTML = statusPillHtml(true);
+          }
+        } catch(error) {
+          console.error('خطأ في استعادة جلسة المستخدم:', error);
+          session.clear();
+          setView(authView);
+        }
         return;
       }
+      
       if(ses.role==='dev'){
-        setView(devView);
-        watchProjects();
-        listenCodes();
-        watchSettings();
+        console.log('جلسة مطور موجودة، استعادة...');
+        try {
+          setView(devView);
+          watchProjects();
+          listenCodes();
+          showTab('projects');
+        } catch(error) {
+          console.error('خطأ في استعادة جلسة المطور:', error);
+          session.clear();
+          setView(authView);
+        }
         return;
       }
-      session.clear(); setView(authView);
+      
+      // إذا كانت الجلسة غير معروفة، امسحها
+      console.log('جلسة غير معروفة، مسح...');
+      session.clear(); 
+      setView(authView);
     }
 
     function setOnlineAndInitUI(){
@@ -783,12 +1310,14 @@
     }
 
     async function init(){
+      console.log('بدء تهيئة التطبيق...');
       setOnlineAndInitUI();
       await watchSettings();
       await restoreSession();
-      const ses = session.get();
-      if(ses && ses.role==='dev'){ listenCodes(); }
+      console.log('التهيئة اكتملت');
     }
+
+    // بدء التطبيق
     init();
   </script>
 </body>
