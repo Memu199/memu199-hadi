@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>بوابة الدخول والمشاريع – ملف واحد</title>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{--brand:#0ea5e9;--ink:#0f172a;--muted:#64748b;--surface:#ffffff;--bg:#f1f5f9}
+    html,body{height:100%}
+    body{background:var(--bg);color:var(--ink)}
+    .card{background:var(--surface);border-radius:1.25rem;box-shadow:0 12px 30px rgba(2,6,23,.08);padding:1.25rem}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;border-radius:1rem;padding:.8rem 1.1rem;font-weight:800}
+    .btn-primary{background:var(--brand);color:#fff}
+    .btn-plain{background:#eef2f7}
+    .btn-danger{background:#ef4444;color:#fff}
+    .chip{display:inline-flex;align-items:center;gap:.35rem;background:#e2e8f0;color:#0f172a;padding:.25rem .6rem;border-radius:999px;font-weight:700}
+    .drawer{position:fixed;top:0;bottom:0;right:0;width:305px;background:#0b1220;color:#e5e7eb;transform:translateX(110%);transition:.3s ease;padding:18px 16px 90px 16px;z-index:60;}
+    .drawer.open{transform:translateX(0)}
+    .drawer a{display:flex;align-items:center;gap:.6rem;padding:.65rem .8rem;border-radius:.8rem;color:#e5e7eb}
+    .drawer a:hover{background:rgba(255,255,255,.08)}
+    .drawer .footer-fixed{position:absolute;bottom:14px;left:16px;right:16px}
+    .bubble{border:1px dashed #cbd5e1;border-radius:1rem;padding:1rem}
+    .mono{font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .fade-enter{animation:fade .25s ease}
+    @keyframes fade{from{opacity:.0;transform:translateY(4px)}to{opacity:1;transform:none}}
+    .toast{position:fixed;bottom:18px;right:18px;z-index:80}
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Top App Bar -->
+  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
+    <div class="mx-auto max-w-6xl px-3 py-2 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <button id="openDrawerBtn" class="btn btn-plain" title="القائمة">
+          <!-- Hamburger -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <h1 class="font-black tracking-tight">بوابة الدخول والمشاريع</h1>
+      </div>
+      <div id="onlinePill" class="chip"><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span> متصل</div>
+    </div>
+  </header>
+
+  <!-- Drawer (لا يظهر أثناء شاشة التسجيل) -->
+  <aside id="drawer" class="drawer">
+    <div class="flex items-center justify-between mb-2">
+      <div class="font-extrabold text-lg">المشاريع</div>
+      <button id="closeDrawerBtn" class="btn btn-plain" title="إغلاق">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+    </div>
+    <nav id="projectsList" class="space-y-1 overflow-y-auto" style="max-height: 70vh;"></nav>
+
+    <div class="footer-fixed">
+      <a id="aboutDevBtn" href="#" class="hover:no-underline"><span class="chip">حول المطوّر</span></a>
+      <div class="mt-3 grid grid-cols-4 gap-2 items-center">
+        <button id="logoutBtn" class="btn btn-danger col-span-1">خروج</button>
+        <!-- ثلاث أيقونات ثابتة -->
+        <a id="socWa" class="btn btn-plain justify-center" target="_blank" rel="noopener" title="واتساب" href="#">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M.057 24l1.687-6.163A10.9 10.9 0 0 1 0 10.989C0 4.93 4.93 0 10.988 0a10.95 10.95 0 0 1 7.78 3.223 10.95 10.95 0 0 1 3.222 7.78c0 6.059-4.93 10.988-10.988 10.988a10.9 10.9 0 0 1-5.21-1.354L.057 24zM6.6 19.36c1.676.995 3.276 1.591 4.388 1.591h.004c4.987 0 9.06-4.073 9.06-9.06.002-2.423-.942-4.701-2.652-6.412A9.02 9.02 0 0 0 10.99 1.5C6.003 1.5 1.93 5.573 1.93 10.56c0 1.75.46 3.457 1.334 4.956l-.88 3.226 3.216-.86z"/></svg>
+        </a>
+        <a id="socTg" class="btn btn-plain justify-center" target="_blank" rel="noopener" title="تيليجرام" href="#">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M9.036 15.186l-.398 5.607c.57 0 .816-.245 1.111-.54l2.665-2.56 5.527 4.04c1.013.56 1.733.266 2.013-.94l3.647-17.083h.001c.324-1.51-.546-2.1-1.537-1.73L1.12 9.31c-1.477.574-1.455 1.398-.25 1.77l5.76 1.797 13.4-8.45c.63-.39 1.207-.175.734.25"/></svg>
+        </a>
+        <a id="socIg" class="btn btn-plain justify-center" target="_blank" rel="noopener" title="إنستغرام" href="#">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm0 2h10c1.654 0 3 1.346 3 3v10c0 1.654-1.346 3-3 3H7c-1.654 0-3-1.346-3-3V7c0-1.654 1.346-3 3-3zm11 1a1 1 0 100 2 1 1 0 000-2zM12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Container -->
+  <main class="mx-auto max-w-6xl px-3 py-6 space-y-6">
+    <!-- Maintenance Banner -->
+    <section id="maintenanceBanner" class="hidden card fade-enter border border-amber-200 bg-amber-50">
+      <div class="flex items-start gap-3">
+        <div class="pt-1"><span class="inline-block w-3 h-3 rounded-full bg-amber-500"></span></div>
+        <div>
+          <h2 class="font-extrabold text-amber-800 mb-1">النظام في وضع الصيانة</h2>
+          <p class="text-amber-800/90 mb-3">حالياً نقوم بأعمال صيانة. يرجى المحاولة لاحقاً. للتواصل:</p>
+          <div class="flex gap-2 flex-wrap">
+            <a id="mWa" class="btn btn-primary" target="_blank" rel="noopener">واتساب</a>
+            <a id="mTg" class="btn btn-plain" target="_blank" rel="noopener">تيليجرام</a>
+            <a id="mIg" class="btn btn-plain" target="_blank" rel="noopener">إنستغرام</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Auth (واجهة واحدة) -->
+    <section id="authView" class="card fade-enter">
+      <h2 class="font-black text-xl mb-3">تسجيل الدخول</h2>
+      <div class="bubble">
+        <h3 class="font-extrabold mb-2">أدخل الكود</h3>
+        <p class="text-sm text-slate-600 mb-3">إذا كان كود مطوّر ستدخل لوحة المطوّر، وإذا كان كود مستخدم سيتم فتح أول مشروع مباشرة.</p>
+        <form id="userLoginForm" class="space-y-2">
+          <input required id="userCodeInput" class="w-full rounded-xl border px-3 py-2" placeholder="أدخل الكود" />
+          <button class="btn btn-primary w-full" type="submit">دخول</button>
+          <div class="text-xs text-slate-500">لأول مرة تحتاج اتصال إنترنت للتحقّق من كود المستخدم. بعد ذلك تعمل المشاريع بدون إنترنت.</div>
+        </form>
+      </div>
+    </section>
+
+    <!-- User Dashboard -->
+    <section id="userView" class="hidden fade-enter">
+      <div class="card mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="chip">مستخدم:</span>
+            <span id="currentUserName" class="font-extrabold"></span>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-slate-600">
+            <span>حالة الكود:</span>
+            <span id="codeStatusPill" class="chip">غير معروف</span>
+          </div>
+        </div>
+      </div>
+      
+        <div class="card md:col-span-2">
+          <h3 class="font-extrabold mb-2">منطقة العرض</h3>
+          <div id="projectHost" class="rounded-xl border h-[60vh] overflow-auto p-3 bg-white"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Developer Panel -->
+    <section id="devView" class="hidden fade-enter">
+      <div class="card mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="chip">لوحة المطوّر</span>
+            <button id="toProjectsTab" class="btn btn-plain">المشاريع</button>
+            <button id="toCodesTab" class="btn btn-plain">الأكواد</button>
+            <button id="toSettingsTab" class="btn btn-plain">الإعدادات</button>
+          </div>
+          <button id="devLogoutBtn" class="btn btn-danger">خروج المطوّر</button>
+        </div>
+      </div>
+
+      <div id="devTabs" class="space-y-6">
+        <!-- Projects Tab -->
+        <div id="projectsTab" class="card">
+          <h3 class="font-extrabold mb-3">إضافة / ترتيب المشاريع</h3>
+          <form id="addProjectForm" class="space-y-3">
+            <input id="projName" class="w-full rounded-xl border px-3 py-2" placeholder="اسم المشروع (مثال: مادة 140)" required />
+            <textarea id="projHTML" class="w-full rounded-xl border px-3 py-2 mono" rows="10" placeholder="ألصق كود HTML الكامل هنا" required></textarea>
+            <div class="flex flex-wrap gap-2">
+              <button class="btn btn-primary" type="submit">إضافة إلى القائمة الجانبية</button>
+              <button id="clearProjectForm" class="btn btn-plain" type="button">تفريغ الحقول</button>
+            </div>
+            <div class="text-xs text-slate-500">سيتم حفظ المشروع في Firestore ومزامنته محلياً للعمل بدون إنترنت.</div>
+          </form>
+
+          <hr class="my-4"/>
+          <h4 class="font-extrabold mb-2">المشاريع الحالية</h4>
+          <div id="projectsManager" class="space-y-2"></div>
+        </div>
+
+        <!-- Codes Tab -->
+        <div id="codesTab" class="card hidden">
+          <h3 class="font-extrabold mb-3">توليد أكواد المستخدمين وإدارتها</h3>
+          <form id="genCodeForm" class="grid md:grid-cols-4 gap-2 items-end">
+            <div class="md:col-span-1">
+              <label class="text-sm">اسم المستخدم (إجباري)</label>
+              <input id="gcUsername" required class="w-full rounded-xl border px-3 py-2" placeholder="مثال: علي محسن" />
+            </div>
+            <div>
+              <label class="text-sm">المدّة</label>
+              <input id="gcAmount" type="number" min="1" value="1" class="w-full rounded-xl border px-3 py-2" />
+            </div>
+            <div>
+              <label class="text-sm">الوحدة</label>
+              <select id="gcUnit" class="w-full rounded-xl border px-3 py-2">
+                <option value="minutes">دقائق</option>
+                <option value="hours">ساعات</option>
+                <option value="days" selected>أيام</option>
+                <option value="months">أشهر</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-primary w-full" type="submit">توليد الكود</button>
+            </div>
+          </form>
+
+          <div class="mt-4 overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left border-b">
+                  <th class="py-2">المستخدم</th>
+                  <th>الكود</th>
+                  <th>الصلاحية</th>
+                  <th>الحالة</th>
+                  <th>استخدام الآن</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="codesTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settingsTab" class="card hidden">
+          <h3 class="font-extrabold mb-3">إعدادات عامة</h3>
+          <form id="settingsForm" class="grid md:grid-cols-3 gap-3">
+            <div class="md:col-span-1">
+              <label class="text-sm font-bold">وضع الصيانة</label>
+              <div class="mt-2 flex items-center gap-2">
+                <input id="maintenanceToggle" type="checkbox" class="scale-125"/>
+                <span class="text-sm text-slate-600">عند التفعيل: يمنع تسجيل الدخول للمستخدمين الجدد ويعرض إشعار الصيانة.</span>
+              </div>
+            </div>
+            <div>
+              <label class="text-sm font-bold">رابط واتساب</label>
+              <input id="setWa" class="w-full rounded-xl border px-3 py-2" placeholder="https://wa.me/"/>
+            </div>
+            <div>
+              <label class="text-sm font-bold">رابط تيليجرام</label>
+              <input id="setTg" class="w-full rounded-xl border px-3 py-2" placeholder="https://t.me/"/>
+            </div>
+            <div>
+              <label class="text-sm font-bold">رابط إنستغرام</label>
+              <input id="setIg" class="w-full rounded-xl border px-3 py-2" placeholder="https://instagram.com/"/>
+            </div>
+            <div class="md:col-span-3">
+              <label class="text-sm font-bold">كود المطوّر</label>
+              <input id="setDevKey" class="w-full rounded-xl border px-3 py-2" placeholder="ضع كود دخول المطوّر"/>
+            </div>
+            <div class="md:col-span-3">
+              <button class="btn btn-primary" type="submit">حفظ الإعدادات</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Firebase + App Script -->
+  <script type="module">
+    /*********************************
+     * ١) Firebase
+     *********************************/
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection,
+      addDoc, deleteDoc, query, orderBy, serverTimestamp, enableIndexedDbPersistence
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+    // ✅ CONFIG الذي أرسلته
+    const firebaseConfig = {
+      apiKey: "AIzaSyBXN4njw1kCHPV28kEYmAk_8a0iazlkbfY",
+      authDomain: "memu99m.firebaseapp.com",
+      projectId: "memu99m",
+      storageBucket: "memu99m.firebasestorage.app",
+      messagingSenderId: "460246646958",
+      appId: "1:460246646958:web:6133e858bce2444a3c6d3f",
+      measurementId: "G-65FLDMSM1P"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    enableIndexedDbPersistence(db).catch(()=>{});
+
+    /*********************************
+     * ٢) DOM helpers
+     *********************************/
+    const $ = (s)=>document.querySelector(s);
+    const drawer = $('#drawer');
+    const openDrawerBtn = $('#openDrawerBtn');
+    const closeDrawerBtn = $('#closeDrawerBtn');
+    const projectsList = $('#projectsList');
+    const projectHost = $('#projectHost');
+    const logoutBtn = $('#logoutBtn');
+    const aboutDevBtn = $('#aboutDevBtn');
+    const onlinePill = $('#onlinePill');
+    const toastEl = $('#toast');
+
+    const maintenanceBanner = $('#maintenanceBanner');
+    const authView = $('#authView');
+    const userView = $('#userView');
+    const devView = $('#devView');
+
+    const userLoginForm = $('#userLoginForm');
+    const userCodeInput = $('#userCodeInput');
+
+    const currentUserName = $('#currentUserName');
+    const codeStatusPill = $('#codeStatusPill');
+
+    const toProjectsTab = $('#toProjectsTab');
+    const toCodesTab = $('#toCodesTab');
+    const toSettingsTab = $('#toSettingsTab');
+
+    const projectsTab = $('#projectsTab');
+    const codesTab = $('#codesTab');
+    const settingsTab = $('#settingsTab');
+
+    const addProjectForm = $('#addProjectForm');
+    const projName = $('#projName');
+    const projHTML = $('#projHTML');
+    const clearProjectForm = $('#clearProjectForm');
+    const projectsManager = $('#projectsManager');
+
+    const genCodeForm = $('#genCodeForm');
+    const gcUsername = $('#gcUsername');
+    const gcAmount = $('#gcAmount');
+    const gcUnit = $('#gcUnit');
+    const codesTable = $('#codesTable');
+
+    const settingsForm = $('#settingsForm');
+    const maintenanceToggle = $('#maintenanceToggle');
+    const setWa = $('#setWa');
+    const setTg = $('#setTg');
+    const setIg = $('#setIg');
+    const setDevKey = $('#setDevKey');
+
+    const socWa = $('#socWa');
+    const socTg = $('#socTg');
+    const socIg = $('#socIg');
+    const mWa = $('#mWa');
+    const mTg = $('#mTg');
+    const mIg = $('#mIg');
+
+    /*********************************
+     * ٣) Helpers
+     *********************************/
+    const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+    const deviceId = (function(){
+      let id = localStorage.getItem('deviceId');
+      if(!id){ id = crypto.randomUUID(); localStorage.setItem('deviceId', id); }
+      return id;
+    })();
+
+    function showToast(msg){
+      toastEl.classList.remove('hidden');
+      toastEl.innerHTML = `<div class="card">${msg}</div>`;
+      setTimeout(()=>toastEl.classList.add('hidden'), 2400);
+    }
+
+    function setOnlineUI(){
+      const online = navigator.onLine;
+      onlinePill.innerHTML = online
+        ? '<span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span> متصل'
+        : '<span class="inline-block w-2 h-2 rounded-full bg-slate-400"></span> غير متصل';
+    }
+    window.addEventListener('online',()=>{ setOnlineUI(); revalidateIfNeeded(); });
+    window.addEventListener('offline',()=>{ setOnlineUI(); });
+
+    function nowTs(){ return Date.now(); }
+    function addDuration(ms, amount, unit){
+      const map = {minutes:60000, hours:3600000, days:86400000, months:2629800000};
+      return ms + (map[unit]||86400000) * amount;
+    }
+    function fmtDate(ts){
+      try{ return new Date(ts).toLocaleString('ar-IQ'); }catch{return ts}
+    }
+    function randCode(len=8){
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let out=''; for(let i=0;i<len;i++) out += chars[Math.floor(Math.random()*chars.length)];
+      return out;
+    }
+    function statusPillHtml(valid){
+      return valid ? '<span class="chip"><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span> صالح</span>'
+                   : '<span class="chip"><span class="inline-block w-2 h-2 rounded-full bg-rose-500"></span> غير صالح</span>';
+    }
+    function usedNowPillHtml(used){
+      return used ? '<span class="chip"><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span> يُستخدم الآن</span>'
+                  : '<span class="chip">غير مستخدم</span>';
+    }
+    function escapeHtml(s){ return s.replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+    /*********************************
+     * ٤) جلسة
+     *********************************/
+    const session = {
+      get(){ try{return JSON.parse(localStorage.getItem('session')||'null')}catch{return null} },
+      set(obj){ localStorage.setItem('session', JSON.stringify(obj)); },
+      clear(){ localStorage.removeItem('session'); }
+    };
+    function setView(view){
+      for(const el of [authView,userView,devView]) el.classList.add('hidden');
+      view.classList.remove('hidden');
+    }
+
+    /*********************************
+     * ٥) الإعدادات العامة
+     *********************************/
+    let settingsDocUnsub = null;
+    async function watchSettings(){
+      if(settingsDocUnsub) settingsDocUnsub();
+      const sRef = doc(db, 'settings', 'main');
+      settingsDocUnsub = onSnapshot(sRef, (snap)=>{
+        const s = snap.exists()? snap.data(): {};
+        const { maintenance=false, wa='#', tg='#', ig='#', devKey='' } = s;
+        maintenanceToggle.checked = !!maintenance;
+        setWa.value = wa || '';
+        setTg.value = tg || '';
+        setIg.value = ig || '';
+        setDevKey.value = devKey || '';
+
+        [socWa,mWa].forEach(a=>a.href = wa||'#');
+        [socTg,mTg].forEach(a=>a.href = tg||'#');
+        [socIg,mIg].forEach(a=>a.href = ig||'#');
+
+        const ses = session.get();
+        maintenanceBanner.classList.toggle('hidden', !maintenance);
+        if(maintenance){
+          if(ses && ses.role==='user' && navigator.onLine){
+            showToast('النظام في صيانة — تم تسجيل خروجك');
+            doLogout();
+          }
+        }
+      });
+    }
+    settingsForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const sRef = doc(db, 'settings', 'main');
+      await setDoc(sRef, {
+        maintenance: maintenanceToggle.checked,
+        wa: setWa.value.trim(),
+        tg: setTg.value.trim(),
+        ig: setIg.value.trim(),
+        devKey: setDevKey.value.trim()
+      }, { merge:true });
+      showToast('تم حفظ الإعدادات');
+    });
+
+    /*********************************
+     * ٦) تحقق الأكواد + جهاز واحد
+     *********************************/
+    async function verifyCodeOnline(code){
+      const ref = doc(db,'one_time_codes', code);
+      const snap = await getDoc(ref);
+      if(!snap.exists()) return { ok:false, reason:'الكود غير موجود' };
+      const data = snap.data();
+      const { username='مستخدم', expiresAt=0, revoked=false, suspended=false, used=false, boundTo='' } = data;
+      const exp = (typeof expiresAt==='number'? expiresAt : expiresAt?.toMillis?.() ?? 0);
+      const validTime = nowTs() < exp;
+      if(revoked) return { ok:false, reason:'الكود ملغي', data };
+      if(suspended) return { ok:false, reason:'الكود موقوف مؤقتاً', data };
+      if(!validTime) return { ok:false, reason:'انتهت صلاحية الكود', data };
+
+      if(boundTo && boundTo !== deviceId){
+        return { ok:false, reason:'هذا الكود مستخدم على جهاز آخر', data };
+      }
+
+      await setDoc(ref, { used:true, boundTo: deviceId, lastSeen: nowTs() }, {merge:true});
+      return { ok:true, data:{...data, username, expiresAt:exp, used:true, boundTo:deviceId} };
+    }
+    async function revalidateIfNeeded(){
+      const ses = session.get();
+      if(!ses || ses.role!=='user') return;
+      if(!navigator.onLine) return;
+      const res = await verifyCodeOnline(ses.code);
+      if(!res.ok){
+        codeStatusPill.innerHTML = statusPillHtml(false);
+        showToast(res.reason||'انتهت الجلسة');
+        await sleep(600);
+        doLogout();
+      }else{
+        codeStatusPill.innerHTML = statusPillHtml(true);
+      }
+    }
+
+    /*********************************
+     * ٧) تسجيل الدخول (واجهة واحدة)
+     *********************************/
+    userLoginForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const inputCode = userCodeInput.value.trim();
+      if(!inputCode) return;
+
+      // مطوّر؟
+      if(inputCode && inputCode.trim() === (setDevKey.value.trim() || '')){
+        session.set({ role:'dev' });
+        setView(devView);
+        watchProjects();
+        listenCodes();
+        watchSettings();
+        showToast('أهلاً بالمطوّر 👨‍💻');
+        return;
+      }
+
+      // مستخدم؟
+      if(maintenanceToggle.checked){
+        showToast('النظام في وضع الصيانة حالياً');
+        return;
+      }
+      if(!navigator.onLine){
+        showToast('يتطلب إنترنت للتحقق لأول مرة');
+        return;
+      }
+      const code = inputCode.toUpperCase();
+      const res = await verifyCodeOnline(code);
+      if(!res.ok){
+        showToast(res.reason || 'فشل التحقق من الكود');
+        return;
+      }
+      const username = res.data.username || 'مستخدم';
+      currentUserName.textContent = username;
+      codeStatusPill.innerHTML = statusPillHtml(true);
+      session.set({ role:'user', code, username, expiresAt:res.data.expiresAt || 0 });
+      setView(userView);
+      watchProjects();
+      await revalidateIfNeeded();
+      showToast('مرحباً '+username+' ✨');
+    });
+
+    /*********************************
+     * ٨) الخروج
+     *********************************/
+    function doLogout(){
+      session.clear();
+      setView(authView);
+    }
+    logoutBtn.addEventListener('click', ()=>{ doLogout(); showToast('تم تسجيل الخروج'); });
+    $('#devLogoutBtn')?.addEventListener('click', ()=>{ doLogout(); showToast('تم تسجيل خروج المطوّر'); });
+
+    /*********************************
+     * ٩) المشاريع (إضافة/ترتيب/عرض)
+     *********************************/
+    let projectsUnsub = null;
+    let cachedProjects = [];
+
+    function renderProjectsUI(){
+      projectsList.innerHTML = cachedProjects.map((p)=>`
+        <a href="#" data-projid="${p.id}" class="bg-white/5 hover:bg-white/10 text-sm font-bold">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>${escapeHtml(p.name||'بدون اسم')}</span>
+        </a>
+      `).join('');
+
+      projectsManager.innerHTML = cachedProjects.map((p,i)=>`
+        <div class="border border-slate-200 rounded-xl p-3 bg-white text-slate-800">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div class="min-w-0">
+              <div class="font-extrabold text-slate-900 text-sm">${escapeHtml(p.name||'بدون اسم')}</div>
+              <div class="text-[11px] text-slate-500 break-all mono">ID: ${p.id}</div>
+            </div>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <button class="btn btn-plain text-xs" data-act="up" data-pid="${p.id}">فوق↑</button>
+              <button class="btn btn-plain text-xs" data-act="down" data-pid="${p.id}">تحت↓</button>
+              <button class="btn btn-danger text-xs" data-act="del" data-pid="${p.id}">حذف</button>
+              <button class="btn btn-plain text-xs" data-act="preview" data-pid="${p.id}">معاينة</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      openFirstProjectIfAny();
+    }
+
+    function swapOrder(i,j){
+      if(i<0 || j<0 || i>=cachedProjects.length || j>=cachedProjects.length) return;
+      const pi = cachedProjects[i], pj = cachedProjects[j];
+      const piRef = doc(db,'projects',pi.id);
+      const pjRef = doc(db,'projects',pj.id);
+      const oldI = pi.order ?? i, oldJ = pj.order ?? j;
+      cachedProjects[i].order = oldJ;
+      cachedProjects[j].order = oldI;
+      updateDoc(piRef,{order:oldJ}).catch(()=>{});
+      updateDoc(pjRef,{order:oldI}).catch(()=>{});
+    }
+
+    projectsManager.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('[data-act]');
+      if(!btn) return;
+      const act = btn.dataset.act;
+      const pid = btn.dataset.pid;
+      const idx = cachedProjects.findIndex(p=>p.id===pid);
+      if(idx===-1) return;
+
+      if(act==='up'){ swapOrder(idx, idx-1); renderProjectsUI(); }
+      else if(act==='down'){ swapOrder(idx, idx+1); renderProjectsUI(); }
+      else if(act==='del'){
+        if(confirm('هل تريد حذف هذا المشروع نهائياً؟')){
+          await deleteDoc(doc(db,'projects',pid));
+          showToast('تم الحذف');
+        }
+      }else if(act==='preview'){
+        const p = cachedProjects[idx];
+        projectHost.innerHTML = p.html || '';
+        setView(userView);
+        drawer.classList.remove('open');
+        showToast('تمت المعاينة');
+      }
+    });
+
+    projectsList.addEventListener('click',(e)=>{
+      const link = e.target.closest('[data-projid]');
+      if(!link) return;
+      const pid = link.dataset.projid;
+      const p = cachedProjects.find(x=>x.id===pid);
+      if(!p) return;
+      projectHost.innerHTML = p.html || '';
+      drawer.classList.remove('open');
+    });
+
+    // أول مشروع تلقائياً بعد دخول المستخدم
+    function openFirstProjectIfAny(){
+      const ses = session.get();
+      if(!ses || ses.role!=='user') return;
+      if(userView && !userView.classList.contains('hidden')){
+        if(projectHost && (!projectHost.innerHTML || projectHost.innerHTML.trim()==='')){
+          const first = cachedProjects[0];
+          if(first){ projectHost.innerHTML = first.html || ''; }
+        }
+      }
+    }
+
+    addProjectForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const name = projName.value.trim();
+      const html = projHTML.value;
+      if(!name || !html){ showToast('أكمل الحقول'); return; }
+      await addDoc(collection(db,'projects'), { name, html, order: nowTs() });
+      projName.value=''; projHTML.value='';
+      showToast('تمت إضافة المشروع');
+    });
+    clearProjectForm.addEventListener('click', ()=>{ projName.value=''; projHTML.value=''; });
+
+    function watchProjects(){
+      if(projectsUnsub) return;
+      const qRef = query(collection(db,'projects'), orderBy('order','asc'));
+      projectsUnsub = onSnapshot(qRef, (qs)=>{
+        cachedProjects = [];
+        qs.forEach(d=>{
+          const data = d.data();
+          cachedProjects.push({ id:d.id, name:data.name||'', html:data.html||'', order:data.order??0 });
+        });
+        renderProjectsUI();
+      });
+    }
+
+    /*********************************
+     * ١٠) الأكواد
+     *********************************/
+    let codesUnsub = null;
+    let codesCache = [];
+
+    function renderCodesTable(){
+      codesTable.innerHTML = codesCache.map(c=>{
+        const expTs = (typeof c.expiresAt==='number'? c.expiresAt : c.expiresAt?.toMillis?.() ?? 0);
+        const stillValid = !c.revoked && !c.suspended && (nowTs() < expTs);
+        const usingNow = !!(c.used && !c.suspended && !c.revoked);
+        return `
+          <tr class="border-b align-top">
+            <td class="py-2 font-bold text-slate-800">${escapeHtml(c.username||'مستخدم')}</td>
+            <td class="py-2">
+              <div class="flex flex-wrap items-center gap-2 mono text-[13px] break-all">
+                <span>${c.id}</span>
+                <button class="btn btn-plain text-xs" data-ct-act="copy" data-code="${c.id}">نسخ</button>
+              </div>
+            </td>
+            <td class="py-2 text-[13px] text-slate-600">${fmtDate(expTs)}</td>
+            <td class="py-2">${statusPillHtml(stillValid)}</td>
+            <td class="py-2">${usedNowPillHtml(usingNow)}</td>
+            <td class="py-2">
+              <div class="flex flex-wrap gap-1 text-[11px]">
+                <button class="btn btn-plain text-xs" data-ct-act="suspend" data-code="${c.id}" data-suspended="${c.suspended?'1':'0'}">${c.suspended?'إلغاء الإيقاف':'إيقاف مؤقت'}</button>
+                <button class="btn btn-plain text-xs" data-ct-act="edit" data-code="${c.id}">تعديل المدة</button>
+                <button class="btn btn-danger text-xs" data-ct-act="delete" data-code="${c.id}">حذف</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function listenCodes(){
+      if(codesUnsub) return;
+      const qRef = query(collection(db,'one_time_codes'), orderBy('createdAt','desc'));
+      codesUnsub = onSnapshot(qRef,(qs)=>{
+        codesCache = [];
+        qs.forEach(d=>{ codesCache.push({ id:d.id, ...d.data() }); });
+        renderCodesTable();
+      });
+    }
+
+    genCodeForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const username = gcUsername.value.trim();
+      if(!username){ showToast('اسم المستخدم إجباري'); return; }
+      const amount = parseInt(gcAmount.value||'1',10);
+      const unit = gcUnit.value;
+      const code = randCode(8);
+      const expiresAt = addDuration(nowTs(), amount, unit);
+      const ref = doc(db,'one_time_codes', code);
+      await setDoc(ref,{
+        username, expiresAt, revoked:false, suspended:false, used:false, boundTo:'', lastSeen:0, createdAt: serverTimestamp()
+      });
+      gcUsername.value='';
+      showToast('تم إنشاء الكود: '+code);
+    });
+
+    codesTable.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('[data-ct-act]');
+      if(!btn) return;
+      const act = btn.dataset.ctAct;
+      const codeId = btn.dataset.code;
+      if(!codeId) return;
+      const ref = doc(db,'one_time_codes', codeId);
+
+      if(act==='copy'){
+        await navigator.clipboard.writeText(codeId);
+        showToast('تم النسخ');
+      }else if(act==='suspend'){
+        const suspended = btn.dataset.suspended === '1';
+        await updateDoc(ref,{ suspended: !suspended });
+        showToast(!suspended?'تم إيقاف الكود مؤقتاً':'تم إلغاء الإيقاف');
+      }else if(act==='edit'){
+        const extraDaysStr = prompt('أدخل عدد الأيام الإضافية (مثال: 1)');
+        if(!extraDaysStr) return;
+        const extraDays = parseInt(extraDaysStr,10);
+        if(isNaN(extraDays) || extraDays<=0){ showToast('قيمة غير صالحة'); return; }
+        const snap = await getDoc(ref);
+        if(!snap.exists()){ showToast('لا يمكن العثور على الكود'); return; }
+        const data = snap.data();
+        const currentExp = (typeof data.expiresAt==='number'? data.expiresAt : data.expiresAt?.toMillis?.() ?? nowTs());
+        const newExp = addDuration(currentExp, extraDays, 'days');
+        await updateDoc(ref,{ expiresAt: newExp });
+        showToast('تم تحديث الصلاحية');
+      }else if(act==='delete'){
+        if(confirm('هل تريد حذف هذا الكود نهائياً؟')){
+          await deleteDoc(ref);
+          showToast('تم حذف الكود');
+        }
+      }
+    });
+
+    /*********************************
+     * ١١) تبويبات لوحة المطوّر
+     *********************************/
+    function showTab(which){
+      projectsTab.classList.add('hidden');
+      codesTab.classList.add('hidden');
+      settingsTab.classList.add('hidden');
+      if(which==='projects') projectsTab.classList.remove('hidden');
+      if(which==='codes') codesTab.classList.remove('hidden');
+      if(which==='settings') settingsTab.classList.remove('hidden');
+    }
+    showTab('projects');
+    toProjectsTab.addEventListener('click',()=>showTab('projects'));
+    toCodesTab.addEventListener('click',()=>showTab('codes'));
+    toSettingsTab.addEventListener('click',()=>showTab('settings'));
+
+    /*********************************
+     * ١٢) فتح/إغلاق القائمة + حول
+     *********************************/
+    openDrawerBtn.addEventListener('click', ()=>{ drawer.classList.add('open'); });
+    closeDrawerBtn.addEventListener('click', ()=>{ drawer.classList.remove('open'); });
+    aboutDevBtn.addEventListener('click',(e)=>{ e.preventDefault(); showToast('هذا النظام من تطويرك ✨'); });
+
+    /*********************************
+     * ١٣) تهيئة
+     *********************************/
+    async function restoreSession(){
+      const ses = session.get();
+      if(!ses){ setView(authView); return; }
+      if(ses.role==='user'){
+        currentUserName.textContent = ses.username || 'مستخدم';
+        codeStatusPill.innerHTML = statusPillHtml(true);
+        setView(userView);
+        watchProjects();
+        await revalidateIfNeeded();
+        return;
+      }
+      if(ses.role==='dev'){
+        setView(devView);
+        watchProjects();
+        listenCodes();
+        watchSettings();
+        return;
+      }
+      session.clear(); setView(authView);
+    }
+
+    function setOnlineAndInitUI(){
+      setOnlineUI();
+    }
+
+    async function init(){
+      setOnlineAndInitUI();
+      await watchSettings();
+      await restoreSession();
+      const ses = session.get();
+      if(ses && ses.role==='dev'){ listenCodes(); }
+    }
+    init();
+  </script>
+</body>
+</html>
