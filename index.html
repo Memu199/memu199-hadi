@@ -27,6 +27,11 @@
       --logout-color: #FF0066;
       /* New: Custom Dev Logout Color (optional different shade) */
       --logout-dev-color: #ef4444; 
+      
+      /* New: Custom Code Card Colors */
+      --code-active-bg: #ecfdf5; /* Green for active/valid */
+      --code-used-bg: #fffbeb; /* Amber for used now */
+      --code-expired-bg: #fee2e2; /* Red for expired */
     }
     
     /* 2. Global Styling & Smooth Scroll */
@@ -123,7 +128,8 @@
     /* 6. Modal Styling */
     .modal-overlay {position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 100; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(2px);}
     /* Increased modal size slightly for better button display */
-    .modal-content {background: var(--surface); padding: 1.5rem; border-radius: 1rem; max-width: 90vw; width: 450px; box-shadow: var(--card-shadow);}
+    .modal-content {background: var(--surface); padding: 1.5rem; border-radius: 1rem; max-width: 90vw; width: 450px; box-shadow: var(--card-shadow); transition: all 0.2s ease-in-out;}
+    .modal-content.large-modal {width: 600px; max-width: 95vw;}
 
     /* 7. Responsive Adjustments */
     @media (max-width: 767px) {
@@ -154,7 +160,41 @@
       </div>
     </div>
   </div>
-
+  
+  <div id="editCodeModal" class="modal-overlay hidden">
+    <form id="editCodeForm" class="modal-content large-modal">
+      <h3 class="font-black text-xl mb-4 text-center">تعديل كود المستخدم</h3>
+      
+      <div class="bubble mb-4">
+        <div class="flex items-center justify-between">
+          <span class="font-bold">الكود:</span>
+          <span id="editCodeDisplay" class="mono text-lg font-extrabold text-blue-700"></span>
+        </div>
+        <div class="flex items-center justify-between mt-2">
+          <span class="font-bold">المستخدم:</span>
+          <input id="editUsername" required class="w-1/2 rounded-lg border border-slate-300 bg-white px-3 py-1 text-sm text-left" placeholder="اسم المستخدم" />
+        </div>
+      </div>
+      
+      <div class="space-y-3">
+        <h4 class="font-extrabold mb-1">تحديد مدة الصلاحية الجديدة</h4>
+        
+        <div class="flex flex-col gap-1">
+          <label for="editExpiresAt" class="text-sm font-medium">تاريخ ووقت الانتهاء (تاريخ ميلادي)</label>
+          <input type="datetime-local" id="editExpiresAt" required class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-base" />
+        </div>
+        
+        <p class="text-sm text-slate-500 pt-2 border-t border-slate-200">
+          ⚠️ عند الضغط على "حفظ التعديل"، سيتم تحديث الصلاحية فوراً للمستخدمين الذين يستخدمون هذا الكود.
+        </p>
+      </div>
+      
+      <div class="flex justify-end gap-3 mt-6">
+        <button id="cancelEditCodeBtn" type="button" class="btn btn-plain">إلغاء</button>
+        <button id="confirmEditCodeBtn" type="submit" class="btn btn-success">حفظ التعديل</button>
+      </div>
+    </form>
+  </div>
   <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200 transition duration-300">
     <div class="mx-auto max-w-6xl px-3 py-2 flex items-center justify-between">
       <div class="flex items-center gap-2">
@@ -331,17 +371,18 @@
 
         <div id="codesTab" class="card hidden">
           <h3 class="font-extrabold mb-3">توليد أكواد المستخدمين وإدارتها</h3>
-          <form id="genCodeForm" class="grid md:grid-cols-4 gap-2 items-end">
+          
+          <form id="genCodeForm" class="grid md:grid-cols-4 gap-2 items-end mb-6 border p-3 rounded-xl bg-slate-50">
             <div class="md:col-span-1">
-              <label class="text-sm">اسم المستخدم (إجباري)</label>
+              <label class="text-sm font-bold">اسم المستخدم (إجباري)</label>
               <input id="gcUsername" required class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2" placeholder="مثال: علي محسن" />
             </div>
             <div>
-              <label class="text-sm">المدّة</label>
+              <label class="text-sm font-bold">المدّة</label>
               <input id="gcAmount" type="number" min="1" value="1" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2" />
             </div>
             <div>
-              <label class="text-sm">الوحدة</label>
+              <label class="text-sm font-bold">الوحدة</label>
               <select id="gcUnit" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2">
                 <option value="minutes">دقائق</option>
                 <option value="hours">ساعات</option>
@@ -350,27 +391,15 @@
               </select>
             </div>
             <div>
-              <button class="btn btn-primary w-full" type="submit">توليد الكود</button>
+              <button class="btn btn-primary w-full" type="submit">توليد كود جديد</button>
             </div>
           </form>
 
-          <div class="mt-4 overflow-x-auto">
-            <table class="w-full text-sm min-w-[700px]">
-              <thead>
-                <tr class="text-left border-b border-slate-200">
-                  <th class="py-2 px-1">المستخدم</th>
-                  <th class="py-2 px-1">الكود</th>
-                  <th class="py-2 px-1">الصلاحية</th>
-                  <th class="py-2 px-1">الحالة</th>
-                  <th class="py-2 px-1">استخدام الآن</th>
-                  <th class="py-2 px-1">إجراءات</th>
-                </tr>
-              </thead>
-              <tbody id="codesTable"></tbody>
-            </table>
-          </div>
+          <hr class="my-4 border-slate-200"/>
+          <h4 class="font-extrabold mb-3">الأكواد الحالية (البطاقات)</h4>
+          <div id="codesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+             </div>
         </div>
-
         <div id="settingsTab" class="card hidden">
           <h3 class="font-extrabold mb-3">إعدادات عامة</h3>
           <form id="settingsForm" class="grid md:grid-cols-3 gap-3">
@@ -433,6 +462,7 @@
 
     // CONFIG
     const firebaseConfig = {
+      // ⚠️ ملاحظة: يجب إخفاء هذا المفتاح عند استخدام أدوات بناء لبيئات الإنتاج ⚠️
       apiKey: "AIzaSyBXN4njw1kCHPV28kEYmAk_8a0iazlkbfY",
       authDomain: "memu99m.firebaseapp.com",
       projectId: "memu99m",
@@ -502,7 +532,8 @@
     const gcUsername = $('#gcUsername');
     const gcAmount = $('#gcAmount');
     const gcUnit = $('#gcUnit');
-    const codesTable = $('#codesTable');
+    // 🌟 UPDATED: Changed from codesTable to codesGrid 🌟
+    const codesGrid = $('#codesGrid'); 
 
     const settingsForm = $('#settingsForm');
     const maintenanceToggle = $('#maintenanceToggle');
@@ -524,15 +555,24 @@
     const authWa = $('#authWa');
     const authTg = $('#authTg');
     const authIg = $('#authIg');
-    const aboutDevBtn = $('#aboutDevBtn'); // تعريف زر "حول المطوّر"
+    const aboutDevBtn = $('#aboutDevBtn'); 
     
     // Logout Modal Elements
     const logoutModal = $('#logoutModal');
     const confirmLogoutBtn = $('#confirmLogoutBtn');
     const cancelLogoutBtn = $('#cancelLogoutBtn');
-
+    
+    // 🌟 NEW: Edit Code Modal Elements 🌟
+    const editCodeModal = $('#editCodeModal');
+    const editCodeForm = $('#editCodeForm');
+    const editCodeDisplay = $('#editCodeDisplay');
+    const editUsername = $('#editUsername');
+    const editExpiresAt = $('#editExpiresAt');
+    const cancelEditCodeBtn = $('#cancelEditCodeBtn');
+    
     // 🌟 New: Countdown Timer Variable 🌟
     let countdownInterval = null;
+    let editingCodeId = null; // 🌟 NEW: Stores the ID of the code being edited 🌟
 
 
     /*********************************
@@ -565,9 +605,26 @@
       const map = {minutes:60000, hours:3600000, days:86400000, months:2629800000};
       return ms + (map[unit]||86400000) * amount;
     }
-    function fmtDate(ts){
-      try{ return new Date(ts).toLocaleString('ar-IQ'); }catch{return ts}
+    
+    // 🌟 UPDATED: Function to format timestamp to YYYY-MM-DDThh:mm (for datetime-local input) 🌟
+    function fmtDateInput(ts) {
+        if (!ts) return '';
+        const d = new Date(ts);
+        // Date part: YYYY-MM-DD
+        const datePart = d.getFullYear() + '-' + 
+                         String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+                         String(d.getDate()).padStart(2, '0');
+        // Time part: hh:mm
+        const timePart = String(d.getHours()).padStart(2, '0') + ':' + 
+                         String(d.getMinutes()).padStart(2, '0');
+        return datePart + 'T' + timePart;
     }
+    
+    // Function to format timestamp to a readable date string
+    function fmtDate(ts){
+      try{ return new Date(ts).toLocaleString('ar-IQ', { dateStyle: 'medium', timeStyle: 'short' }); }catch{return 'غير محدد'}
+    }
+    
     function randCode(len=8){
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
       let out=''; for(let i=0;i<len;i++) out += chars[Math.floor(Math.random()*chars.length)];
@@ -578,7 +635,8 @@
                    : '<span class="chip"><span class="inline-block w-2 h-2 rounded-full bg-rose-500"></span> غير صالح</span>';
     }
     function usedNowPillHtml(used){
-      return used ? '<span class="chip"><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span> يُستخدم الآن</span>'
+      // 🌟 NEW: Changed UI style for 'Used Now' 🌟
+      return used ? '<span class="chip font-bold bg-amber-500 text-white"><span class="inline-block w-2 h-2 rounded-full bg-white"></span> يُستخدم الآن</span>'
                   : '<span class="chip">غير مستخدم</span>';
     }
     function escapeHtml(s){ return s.replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
@@ -602,7 +660,6 @@
 
     // 🌟 دالة جديدة: تفتح الكود في نافذة جديدة معزولة بالكامل 🌟
     function openIsolatedContent(htmlContent, title = 'المشروع'){
-        // Expected: Full HTML content, which is wrapped in a minimal page structure
         const fullHtml = `
             <!DOCTYPE html>
             <html lang="ar" dir="rtl">
@@ -611,7 +668,6 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <title>${title}</title>
                 <style>
-                    /* Reset any default body margins or padding and ensure clean background */
                     body { margin: 0; padding: 0; background-color: white; }
                 </style>
             </head>
@@ -621,17 +677,13 @@
             </html>
         `;
 
-        // Create a blob URL to safely open the content in a new window/tab
         const blob = new Blob([fullHtml], { type: 'text/html' });
         const blobUrl = URL.createObjectURL(blob);
         
-        // Open the new window/tab
         const newWindow = window.open(blobUrl, '_blank');
         
         if (newWindow) {
-            // Revoke the URL after the window is loaded to prevent memory leaks
             newWindow.onload = () => {
-                // Wait a moment before revoking to ensure content load
                 setTimeout(() => URL.revokeObjectURL(blobUrl), 1000); 
             };
         } else {
@@ -696,10 +748,8 @@
 
 
     /*********************************
-     * ٤) جلسة + وضع العرض - الإصلاح هنا
+     * ٤) جلسة + وضع العرض
      *********************************/
-    let editingProjectId = null;
-    let editingCodeId = null;
     let activeProjectId = null;
     
     const session = {
@@ -799,22 +849,34 @@
     settingsForm.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const sRef = doc(db, 'settings', 'main');
-      await setDoc(sRef, {
-        maintenance: maintenanceToggle.checked,
-        wa: setWa.value.trim(),
-        tg: setTg.value.trim(),
-        ig: setIg.value.trim(),
-        devKey: setDevKey.value.trim()
-      }, { merge:true });
-      showToast('تم حفظ الإعدادات');
+      // 🌟 Added Error Handling
+      try {
+          await setDoc(sRef, {
+            maintenance: maintenanceToggle.checked,
+            wa: setWa.value.trim(),
+            tg: setTg.value.trim(),
+            ig: setIg.value.trim(),
+            devKey: setDevKey.value.trim()
+          }, { merge:true });
+          showToast('تم حفظ الإعدادات');
+      } catch (error) {
+          console.error('Firebase Error (Settings Save):', error);
+          showToast('فشل في حفظ الإعدادات: ' + (error.message || 'خطأ غير معروف'));
+      }
     });
     
     aboutDevForm.addEventListener('submit', async (e)=>{
         e.preventDefault();
         const html = aboutDevHTML.value;
         const sRef = doc(db, 'settings', 'main');
-        await setDoc(sRef, { aboutDevHtml: html }, { merge:true });
-        showToast('تم حفظ محتوى "حول المطوّر"');
+        // 🌟 Added Error Handling
+        try {
+            await setDoc(sRef, { aboutDevHtml: html }, { merge:true });
+            showToast('تم حفظ محتوى "حول المطوّر"');
+        } catch (error) {
+            console.error('Firebase Error (About Dev Save):', error);
+            showToast('فشل في حفظ المحتوى: ' + (error.message || 'خطأ غير معروف'));
+        }
     });
 
     /*********************************
@@ -836,19 +898,27 @@
         return { ok:false, reason:'هذا الكود مستخدم على جهاز آخر', data };
       }
       
-      if(!used || !boundTo){
+      try {
+          // If code is not used or not bound, attempt to bind it
+          if(!used || !boundTo){
+              await setDoc(ref, { used:true, boundTo: deviceId, lastSeen: nowTs() }, {merge:true});
+          }
+          
+          // Re-update DB state in case session is somehow invalid (just to be safe)
+          if(!validTime || revoked || suspended){
+              session.clear(); 
+              if(data.used && data.boundTo === deviceId){
+                 await setDoc(ref, { used: false, boundTo: '' }, {merge:true});
+              }
+          }
+
+          // Ensure the current device is bound and last seen is updated
           await setDoc(ref, { used:true, boundTo: deviceId, lastSeen: nowTs() }, {merge:true});
+      } catch (e) {
+          console.error('Failed to update binding status:', e);
+          // Allow login but log the error
       }
       
-      // Update DB state if session is no longer valid
-      if(!validTime || revoked || suspended){
-          session.clear(); 
-          if(data.used && data.boundTo === deviceId){
-             await setDoc(ref, { used: false, boundTo: '' }, {merge:true});
-          }
-      }
-
-      await setDoc(ref, { used:true, boundTo: deviceId, lastSeen: nowTs() }, {merge:true});
       return { ok:true, data:{...data, username, expiresAt:exp, used:true, boundTo:deviceId} };
     }
     
@@ -878,46 +948,62 @@
       e.preventDefault();
       const inputCode = userCodeInput.value.trim();
       if(!inputCode) return;
-
-      // مطوّر؟
-      const settingsSnap = await getDoc(doc(db, 'settings', 'main'));
-      const devKey = settingsSnap.data()?.devKey || '';
-
-      if(inputCode && inputCode.trim() === devKey.trim()){
-        session.set({ role:'dev' });
-        setView(devView);
-        watchProjects();
-        listenCodes();
-        showTab('projects');
-        showToast('أهلاً بالمطوّر 👨‍💻');
-        return;
-      }
-
-      // مستخدم؟
-      if(maintenanceToggle.checked){
-        showToast('النظام في وضع الصيانة حالياً');
-        return;
-      }
-      if(!navigator.onLine){
-        showToast('يتطلب إنترنت للتحقق لأول مرة');
-        return;
-      }
-      const code = inputCode.toUpperCase();
-      const res = await verifyCodeOnline(code);
-      if(!res.ok){
-        showToast(res.reason || 'فشل التحقق من الكود');
-        return;
-      }
-      const username = res.data.username || 'مستخدم';
-      currentUserName.textContent = username;
       
-      // 🌟 Start countdown instead of setting a static status pill 🌟
-      session.set({ role:'user', code, username, expiresAt:res.data.expiresAt || 0 });
-      setView(userView);
-      watchProjects();
-      startCountdown(); 
-      await revalidateIfNeeded();
-      showToast('مرحباً '+username+' ✨');
+      // 🌟 Added Loading State
+      const submitBtn = userLoginForm.querySelector('[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'جاري التحقق...';
+      submitBtn.disabled = true;
+
+      try {
+          // مطوّر؟
+          const settingsSnap = await getDoc(doc(db, 'settings', 'main'));
+          const devKey = settingsSnap.data()?.devKey || '';
+
+          if(inputCode && inputCode.trim() === devKey.trim()){
+            session.set({ role:'dev' });
+            setView(devView);
+            watchProjects();
+            listenCodes();
+            showTab('projects');
+            showToast('أهلاً بالمطوّر 👨‍💻');
+            return;
+          }
+
+          // مستخدم؟
+          const s = settingsSnap.data();
+          if(s?.maintenance){
+            showToast('النظام في وضع الصيانة حالياً');
+            return;
+          }
+          if(!navigator.onLine){
+            showToast('يتطلب إنترنت للتحقق لأول مرة');
+            return;
+          }
+          const code = inputCode.toUpperCase();
+          const res = await verifyCodeOnline(code);
+          if(!res.ok){
+            showToast(res.reason || 'فشل التحقق من الكود');
+            return;
+          }
+          const username = res.data.username || 'مستخدم';
+          currentUserName.textContent = username;
+          
+          // 🌟 Start countdown instead of setting a static status pill 🌟
+          session.set({ role:'user', code, username, expiresAt:res.data.expiresAt || 0 });
+          setView(userView);
+          watchProjects();
+          startCountdown(); 
+          await revalidateIfNeeded();
+          showToast('مرحباً '+username+' ✨');
+      } catch (error) {
+          console.error('Login Error:', error);
+          showToast('فشل في تسجيل الدخول: ' + (error.message || 'خطأ غير معروف'));
+      } finally {
+          // 🌟 Revert Loading State
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+      }
     });
 
     /*********************************
@@ -938,7 +1024,12 @@
       
       if(ses && ses.role==='user' && clearDbState){
           const ref = doc(db,'one_time_codes', ses.code);
-          await updateDoc(ref, { used: false, boundTo: '' }).catch(console.error);
+          // 🌟 Added Error Handling
+          try {
+             await updateDoc(ref, { used: false, boundTo: '' });
+          } catch (error) {
+             console.error('Failed to clear DB state on logout:', error);
+          }
       }
       
       // 🌟 CLEAR INTERVAL 🌟
@@ -1034,10 +1125,14 @@
       const piRef = doc(db,'projects',pi.id);
       const pjRef = doc(db,'projects',pj.id);
       const oldI = pi.order ?? i, oldJ = pj.order ?? j;
-      cachedProjects[i].order = oldJ;
-      cachedProjects[j].order = oldI;
-      updateDoc(piRef,{order:oldJ}).catch(()=>{});
-      updateDoc(pjRef,{order:oldI}).catch(()=>{});
+      // 🌟 Added Error Handling
+      try {
+          updateDoc(piRef,{order:oldJ}).catch(console.error);
+          updateDoc(pjRef,{order:oldI}).catch(console.error);
+      } catch (error) {
+          console.error('Failed to swap order:', error);
+          showToast('فشل في تبديل الترتيب');
+      }
     }
     
     projectsManager.addEventListener('click', async (e)=>{
@@ -1050,11 +1145,17 @@
       const p = cachedProjects[idx];
 
       if(act==='up'){ swapOrder(idx, idx-1); renderProjectsUI(); }
-      else if(act==='down'){ swapOrder(idx, idx-1); renderProjectsUI(); }
+      else if(act==='down'){ swapOrder(idx, idx+1); renderProjectsUI(); } 
       else if(act==='del'){
         if(confirm('هل تريد حذف هذا المشروع نهائياً؟')){
-          await deleteDoc(doc(db,'projects',pid));
-          showToast('تم الحذف');
+          // 🌟 Added Error Handling
+          try {
+             await deleteDoc(doc(db,'projects',pid));
+             showToast('تم الحذف');
+          } catch (error) {
+             console.error('Firebase Error (Project Delete):', error);
+             showToast('فشل في حذف المشروع: ' + (error.message || 'خطأ غير معروف'));
+          }
         }
       }else if(act==='edit'){
           projName.value = p.name || '';
@@ -1112,23 +1213,42 @@
       const html = projHTML.value;
       if(!name || !html){ showToast('أكمل الحقول'); return; }
       
-      if(editingProjectId){
-          const ref = doc(db,'projects',editingProjectId);
-          await updateDoc(ref, { name, html });
-          showToast('تم حفظ تعديلات المشروع');
-      }else{
-          // Find the current max order value
-          const maxOrder = cachedProjects.length > 0 ? (cachedProjects[0].order + 1) : nowTs();
-          await addDoc(collection(db,'projects'), { name, html, order: maxOrder });
-          showToast('تمت إضافة المشروع');
-      }
+      // 🌟 Added Loading State
+      const isEditing = !!editingProjectId;
+      const successText = isEditing ? 'تم حفظ تعديلات المشروع' : 'تمت إضافة المشروع';
       
-      projName.value=''; 
-      projHTML.value='';
-      editingProjectId = null;
-      addProjectSubmitBtn.textContent = 'إضافة إلى القائمة الجانبية';
-      addProjectSubmitBtn.classList.remove('btn-success');
-      addProjectSubmitBtn.classList.add('btn-primary');
+      const originalText = addProjectSubmitBtn.textContent;
+      addProjectSubmitBtn.textContent = 'جاري الحفظ...';
+      addProjectSubmitBtn.disabled = true;
+
+      try {
+          if(isEditing){
+              const ref = doc(db,'projects',editingProjectId);
+              await updateDoc(ref, { name, html });
+          }else{
+              const maxOrder = cachedProjects.length > 0 ? (cachedProjects[0].order + 1) : nowTs();
+              await addDoc(collection(db,'projects'), { name, html, order: maxOrder });
+          }
+          
+          showToast(successText);
+          projName.value=''; 
+          projHTML.value='';
+          editingProjectId = null;
+          // Reset button to 'Add' state only on success
+          addProjectSubmitBtn.textContent = 'إضافة إلى القائمة الجانبية';
+          addProjectSubmitBtn.classList.remove('btn-success');
+          addProjectSubmitBtn.classList.add('btn-primary');
+          
+      } catch (error) {
+          console.error('Firebase Error (Project Add/Edit):', error);
+          showToast('فشل في حفظ المشروع: ' + (error.message || 'خطأ غير معروف'));
+          // Restore the original text only if an error occurred (i.e., if it's still 'جاري الحفظ...')
+          if(addProjectSubmitBtn.textContent === 'جاري الحفظ...') {
+             addProjectSubmitBtn.textContent = originalText; 
+          }
+      } finally {
+          addProjectSubmitBtn.disabled = false;
+      }
     });
     
     clearProjectForm.addEventListener('click', ()=>{ 
@@ -1160,40 +1280,64 @@
     let codesUnsub = null;
     let codesCache = [];
 
+    // 🌟 UPDATED: Render Codes as Cards 🌟
     function renderCodesTable(){
-      codesTable.innerHTML = codesCache.map(c=>{
-        const expTs = (typeof c.expiresAt==='number'? c.expiresAt : c.expiresAt?.toMillis?.() ?? 0);
-        const stillValid = !c.revoked && !c.suspended && (nowTs() < expTs);
-        const usingNow = !!(c.used && !c.suspended && !c.revoked);
-        
-        let usedPill = usedNowPillHtml(usingNow);
-        if(usingNow){
-            usedPill = `<div class="flex items-center gap-1">${usedPill} <button class="btn btn-plain text-xs p-1" data-ct-act="force-logout" data-code="${c.id}" title="تسجيل خروج إجباري">❌</button></div>`;
-        }
+        codesGrid.innerHTML = codesCache.map(c=>{
+            const expTs = (typeof c.expiresAt==='number'? c.expiresAt : c.expiresAt?.toMillis?.() ?? 0);
+            const stillValid = !c.revoked && !c.suspended && (nowTs() < expTs);
+            const usingNow = !!(c.used && !c.suspended && !c.revoked && c.boundTo); // Must check boundTo
+            const statusColor = stillValid ? 'var(--code-active-bg)' : 'var(--code-expired-bg)';
+            const statusBorder = stillValid ? 'border-emerald-300' : 'border-rose-400';
+            const statusTextColor = stillValid ? 'text-emerald-800' : 'text-rose-800';
+            const cardBg = usingNow ? 'var(--code-used-bg)' : statusColor;
+            
+            let statusBadge = stillValid ? 'صالح' : 'منتهي';
+            if (c.revoked) statusBadge = 'ملغي';
+            if (c.suspended) statusBadge = 'موقوف';
+            
+            const lastSeenTime = c.lastSeen ? fmtDate(c.lastSeen.toMillis ? c.lastSeen.toMillis() : c.lastSeen) : 'غير معروف';
 
-        return `
-          <tr class="border-b border-slate-200 align-top">
-            <td class="py-2 px-1 font-bold text-slate-800">${escapeHtml(c.username||'مستخدم')}</td>
-            <td class="py-2 px-1">
-              <div class="flex flex-wrap items-center gap-2 mono text-[13px] break-all">
-                <span>${c.id}</span>
-                <button class="btn btn-plain text-xs p-1" data-ct-act="copy" data-code="${c.id}">نسخ</button>
-              </div>
-            </td>
-            <td class="py-2 px-1 text-[13px] text-slate-600">${fmtDate(expTs)}</td>
-            <td class="py-2 px-1">${statusPillHtml(stillValid)}</td>
-            <td class="py-2 px-1">${usedPill}</td>
-            <td class="py-2 px-1">
-              <div class="flex flex-wrap gap-1 text-[11px]">
-                <button class="btn btn-plain text-xs p-1" data-ct-act="suspend" data-code="${c.id}" data-suspended="${c.suspended?'1':'0'}">${c.suspended?'إلغاء الإيقاف':'إيقاف مؤقت'}</button>
-                <button class="btn btn-primary text-xs p-1" data-ct-act="edit" data-code="${c.id}">تعديل المدة</button>
-                <button class="btn btn-danger text-xs p-1" data-ct-act="delete" data-code="${c.id}">حذف</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
+            return `
+                <div class="card p-4 space-y-3" style="background-color: ${cardBg}; border: 1px solid ${stillValid ? 'transparent' : 'var(--code-expired-bg)'};">
+                    <div class="flex items-center justify-between border-b pb-2 ${statusBorder}">
+                        <div class="font-extrabold text-lg text-slate-800">${escapeHtml(c.username||'مستخدم')}</div>
+                        <span class="text-sm font-bold ${statusTextColor}">${statusBadge}</span>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <div class="text-xs text-slate-600">الكود:</div>
+                        <div class="flex items-center justify-between text-base mono font-extrabold text-blue-700">
+                            <span>${c.id}</span>
+                            <button class="btn btn-plain text-xs p-1 h-fit" data-ct-act="copy" data-code="${c.id}">نسخ</button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1 text-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-600">ينتهي في:</span>
+                            <span class="font-medium">${fmtDate(expTs)}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-600">آخر استخدام:</span>
+                            <span class="text-xs text-slate-500">${lastSeenTime}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-3 border-t border-slate-200">
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            ${usedNowPillHtml(usingNow)}
+                            ${usingNow ? `<button class="btn btn-plain text-xs p-1" data-ct-act="force-logout" data-code="${c.id}" title="تسجيل خروج إجباري">❌</button>` : ''}
+                            
+                            <button class="btn btn-success text-xs p-2" data-ct-act="edit" data-code="${c.id}">تعديل المدة/الاسم</button>
+                            <button class="btn btn-danger text-xs p-2" data-ct-act="delete" data-code="${c.id}">حذف</button>
+                            <button class="btn btn-plain text-xs p-2" data-ct-act="suspend" data-code="${c.id}" data-suspended="${c.suspended?'1':'0'}">${c.suspended?'إلغاء الإيقاف':'إيقاف مؤقت'}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
+
 
     async function listenCodes(){
       if(codesUnsub) return;
@@ -1212,90 +1356,160 @@
       const amount = parseInt(gcAmount.value||'1',10);
       const unit = gcUnit.value;
       
-      if(editingCodeId){
-        const ref = doc(db,'one_time_codes', editingCodeId);
-        const code = codesCache.find(c=>c.id===editingCodeId);
-        
-        const currentExp = (typeof code.expiresAt==='number'? code.expiresAt : code.expiresAt?.toMillis?.() ?? nowTs());
-        const newExp = addDuration(currentExp, amount, unit);
-        
-        await updateDoc(ref,{ username, expiresAt: newExp });
-        showToast('تم تحديث صلاحية الكود: '+editingCodeId);
-        
-        // 🌟 If the edited code is the one currently in use, trigger revalidation 🌟
-        const ses = session.get();
-        if(ses && ses.role === 'user' && ses.code === editingCodeId && navigator.onLine){
-            // Update local session to reflect new expiry immediately
-            ses.expiresAt = newExp;
-            session.set(ses);
-            startCountdown();
-        }
-        
-        editingCodeId = null;
-        genCodeSubmitBtn.textContent = 'توليد الكود';
-        genCodeSubmitBtn.classList.remove('btn-success');
-        genCodeSubmitBtn.classList.add('btn-primary');
-        gcUsername.value=''; gcAmount.value=1; gcUnit.value='days';
-        
-      } else {
-        const code = randCode(8);
-        const expiresAt = addDuration(nowTs(), amount, unit);
-        const ref = doc(db,'one_time_codes', code);
-        await setDoc(ref,{
-          username, expiresAt, revoked:false, suspended:false, used:false, boundTo:'', lastSeen:0, createdAt: serverTimestamp()
-        });
-        gcUsername.value='';
-        showToast('تم إنشاء الكود: '+code);
+      // 🌟 Added Loading State
+      const originalText = genCodeSubmitBtn.textContent;
+      genCodeSubmitBtn.textContent = 'جاري العمل...';
+      genCodeSubmitBtn.disabled = true;
+
+      try {
+          // Note: Editing is now handled by the Modal (editCodeForm)
+          // This block is only for generating NEW codes
+
+          const code = randCode(8);
+          const expiresAt = addDuration(nowTs(), amount, unit);
+          const ref = doc(db,'one_time_codes', code);
+          await setDoc(ref,{
+            username, expiresAt, revoked:false, suspended:false, used:false, boundTo:'', lastSeen:0, createdAt: serverTimestamp()
+          });
+          showToast('تم إنشاء الكود: '+code);
+          
+          gcUsername.value=''; gcAmount.value=1; gcUnit.value='days';
+          
+      } catch (error) {
+          console.error('Firebase Error (Code Gen):', error);
+          showToast('فشل في العملية: ' + (error.message || 'خطأ غير معروف'));
+          // Restore the original text
+          genCodeSubmitBtn.textContent = originalText;
+      } finally {
+          // 🌟 Revert Loading State
+          genCodeSubmitBtn.disabled = false;
       }
     });
 
-    codesTable.addEventListener('click', async (e)=>{
+    codesGrid.addEventListener('click', async (e)=>{
       const btn = e.target.closest('[data-ct-act]');
       if(!btn) return;
       const act = btn.dataset.ctAct;
       const codeId = btn.dataset.code;
       if(!codeId) return;
       const ref = doc(db,'one_time_codes', codeId);
+      const code = codesCache.find(c=>c.id===codeId);
+      if(!code) return;
 
       if(act==='copy'){
-        // FIX: Ensure copy functionality works on button click
         try {
             await navigator.clipboard.writeText(codeId);
-            showToast('تم النسخ');
+            showToast('تم نسخ الكود: ' + codeId);
         } catch (err) {
             showToast('فشل النسخ: حاول يدوياً');
         }
       }else if(act==='suspend'){
         const suspended = btn.dataset.suspended === '1';
-        await updateDoc(ref,{ suspended: !suspended });
-        showToast(!suspended?'تم إيقاف الكود مؤقتاً':'تم إلغاء الإيقاف');
+        // 🌟 Added Error Handling
+        try {
+            await updateDoc(ref,{ suspended: !suspended, used: false, boundTo: '' }); // Reset usage on suspend/unsuspend
+            showToast(!suspended?'تم إيقاف الكود مؤقتاً':'تم إلغاء الإيقاف');
+        } catch (error) {
+             console.error('Firebase Error (Suspend):', error);
+             showToast('فشل في تغيير حالة الإيقاف: ' + (error.message || 'خطأ غير معروف'));
+        }
       }else if(act==='edit'){
-          const code = codesCache.find(c=>c.id===codeId);
-          if(!code) return;
-          
-          gcUsername.value = code.username || 'مستخدم';
-          gcAmount.value = 1;
-          gcUnit.value = 'days';
-          
+          // 🌟 NEW: Open Edit Modal and populate data 🌟
           editingCodeId = codeId;
-          genCodeSubmitBtn.textContent = 'حفظ التعديل';
-          genCodeSubmitBtn.classList.remove('btn-primary');
-          genCodeSubmitBtn.classList.add('btn-success');
-          showTab('codes');
-          showToast('تم تحميل الكود للتعديل.');
+          editCodeDisplay.textContent = codeId;
+          editUsername.value = code.username || '';
+          
+          const expTs = (typeof code.expiresAt==='number'? code.expiresAt : code.expiresAt?.toMillis?.() ?? nowTs());
+          // Convert timestamp to input compatible format (YYYY-MM-DDThh:mm)
+          editExpiresAt.value = fmtDateInput(expTs); 
+          
+          editCodeModal.classList.remove('hidden');
+          showToast('تعديل الكود: ' + codeId);
           
       }else if(act==='delete'){
-        if(confirm('هل تريد حذف هذا الكود نهائياً؟')){
-          await deleteDoc(ref);
-          showToast('تم حذف الكود');
+        if(confirm(`هل تريد حذف الكود ${codeId} نهائياً؟`)){
+          // 🌟 Added Error Handling
+          try {
+              await deleteDoc(ref);
+              showToast('تم حذف الكود');
+          } catch (error) {
+              console.error('Firebase Error (Code Delete):', error);
+              showToast('فشل في حذف الكود: ' + (error.message || 'خطأ غير معروف'));
+          }
         }
       }else if(act==='force-logout'){
-        if(confirm('هل أنت متأكد من تسجيل الخروج الإجباري لهذا المستخدم؟')){
-           await updateDoc(ref, { used: false, boundTo: '' });
-           showToast('تم تسجيل الخروج الإجباري بنجاح');
+        if(confirm(`هل أنت متأكد من تسجيل الخروج الإجباري للمستخدم ${code.username}؟`)){
+           // 🌟 Added Error Handling
+           try {
+              await updateDoc(ref, { used: false, boundTo: '' });
+              showToast('تم تسجيل الخروج الإجباري بنجاح');
+           } catch (error) {
+               console.error('Firebase Error (Force Logout):', error);
+               showToast('فشل في تسجيل الخروج الإجباري: ' + (error.message || 'خطأ غير معروف'));
+           }
         }
       }
     });
+
+    // 🌟 NEW: Handle Code Edit Form Submission 🌟
+    editCodeForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const newUsername = editUsername.value.trim();
+        const newExpiryDateString = editExpiresAt.value;
+        
+        if (!editingCodeId || !newUsername || !newExpiryDateString) return;
+        
+        const ref = doc(db,'one_time_codes', editingCodeId);
+        
+        // Convert the date string (YYYY-MM-DDThh:mm) to a Unix timestamp (milliseconds)
+        const newExpTs = new Date(newExpiryDateString).getTime();
+
+        if (isNaN(newExpTs)) {
+            showToast('الرجاء إدخال تاريخ ووقت صحيح');
+            return;
+        }
+
+        const confirmBtn = $('#confirmEditCodeBtn');
+        const originalText = confirmBtn.textContent;
+        confirmBtn.textContent = 'جاري الحفظ...';
+        confirmBtn.disabled = true;
+
+        try {
+            await updateDoc(ref, { 
+                username: newUsername, 
+                expiresAt: newExpTs 
+            });
+            
+            showToast('تم تحديث الكود بنجاح!');
+            
+            // 🌟 CRITICAL: Update the user's local session if they are currently using this code
+            const ses = session.get();
+            if(ses && ses.role === 'user' && ses.code === editingCodeId && navigator.onLine){
+                ses.expiresAt = newExpTs;
+                ses.username = newUsername; // Update username too
+                session.set(ses);
+                startCountdown();
+                currentUserName.textContent = newUsername;
+            }
+            
+            editCodeModal.classList.add('hidden');
+            editingCodeId = null;
+        } catch (error) {
+            console.error('Firebase Error (Code Edit Update):', error);
+            showToast('فشل في تحديث الكود: ' + (error.message || 'خطأ غير معروف'));
+        } finally {
+            confirmBtn.textContent = originalText;
+            confirmBtn.disabled = false;
+        }
+    });
+    
+    // 🌟 NEW: Handle Cancel Edit Code 🌟
+    cancelEditCodeBtn.addEventListener('click', () => {
+        editingCodeId = null;
+        editCodeModal.classList.add('hidden');
+    });
+
 
     /*********************************
      * ١١) تبويبات لوحة المطوّر
@@ -1345,10 +1559,16 @@
     aboutDevBtn.addEventListener('click', async (e)=>{ 
         e.preventDefault(); 
         const sRef = doc(db, 'settings', 'main');
-        const snap = await getDoc(sRef);
-        // 🌟 استخدام دالة العرض المعزول لصفحة حول المطوّر 🌟
-        const html = snap.data()?.aboutDevHtml || '<h2>لم يتم تعيين محتوى لصفحة حول المطوّر بعد.</h2>';
-        openIsolatedContent(html, 'حول المطوّر');
+        // 🌟 Added Error Handling
+        try {
+            const snap = await getDoc(sRef);
+            // 🌟 استخدام دالة العرض المعزول لصفحة حول المطوّر 🌟
+            const html = snap.data()?.aboutDevHtml || '<h2>لم يتم تعيين محتوى لصفحة حول المطوّر بعد.</h2>';
+            openIsolatedContent(html, 'حول المطوّر');
+        } catch (error) {
+            console.error('Firebase Error (About Dev Fetch):', error);
+            showToast('فشل في جلب محتوى حول المطوّر: ' + (error.message || 'خطأ غير معروف'));
+        }
         
         drawer.classList.remove('open');
         
